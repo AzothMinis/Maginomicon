@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarot Story Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a6030;
+    --deep: #080608;
+    --panel: #0e0b10;
+    --border: rgba(201,168,76,0.25);
+    --text: #d4c5a0;
+    --text-dim: #7a6e58;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'EB Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(201,168,76,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 70%, rgba(201,168,76,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(201,168,76,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.15) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, rgba(201,168,76,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 50%, rgba(201,168,76,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(4,2,6,0.85) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+  header { text-align: center; padding: 20px 0 36px; }
+  .title-ornament {
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+    color: var(--gold-light);
+    text-shadow: 0 0 40px rgba(201,168,76,0.4), 0 0 80px rgba(201,168,76,0.15);
+    letter-spacing: 4px;
+    line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .subtitle {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 18px 0 28px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim));
+  }
+  .divider::after { background: linear-gradient(to left, transparent, var(--gold-dim)); }
+  .divider span { color: var(--gold); font-size: 18px; }
+
+  /* Instruction */
+  .instr {
+    text-align: center;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    min-height: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Pyramid */
+  .pyramid { display: flex; flex-direction: column; gap: 12px; }
+  .prow { display: flex; justify-content: center; gap: 12px; align-items: flex-start; }
+  .row-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  /* Cards */
+  .card-slot { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .slot-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .tarot-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 6px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+  }
+  .tarot-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .tarot-card.lg, .tarot-card.md, .tarot-card.sc { width: 76px; height: 116px; }
+
+  .tarot-card.clickable {
+    cursor: pointer;
+  }
+  .tarot-card.clickable:hover {
+    border-color: rgba(201,168,76,0.6);
+    box-shadow: 0 0 20px rgba(201,168,76,0.12);
+    transform: translateY(-4px);
+  }
+  .tarot-card.dim {
+    opacity: 0.2;
+    pointer-events: none;
+  }
+  .tarot-card.revealed {
+    border-color: rgba(201,168,76,0.5);
+    box-shadow: 0 0 18px rgba(201,168,76,0.1);
+    cursor: default;
+  }
+
+  /* Card back */
+  .card-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  .card-back svg { opacity: 0.15; }
+  .tarot-card .card-back svg { width: 42px; height: 58px; }
+
+  /* Card front */
+  .card-front {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 100%;
+    padding: 2px;
+  }
+  .tarot-card.revealed .card-front { display: flex; }
+  .tarot-card.revealed .card-back { display: none; }
+
+  .card-num {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--gold-dim);
+    letter-spacing: 1px;
+  }
+  .card-sym {
+    font-size: 24px;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px rgba(201,168,76,0.4));
+  }
+  .card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--gold-light);
+    line-height: 1.3;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  /* Controls below pyramid */
+  .pyramid-controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 28px;
+  }
+  .action-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .action-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(201,168,76,0.08) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  .action-btn:hover::before { transform: translateX(100%); }
+  .action-btn:hover {
+    background: rgba(201,168,76,0.06);
+    box-shadow: 0 0 30px rgba(201,168,76,0.15), inset 0 0 30px rgba(201,168,76,0.05);
+  }
+  .action-btn.dim-btn {
+    border-color: var(--gold-dim);
+    color: var(--text-dim);
+  }
+  .action-btn.dim-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+
+  /* Story panel */
+  .story-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 36px 40px;
+    margin-top: 40px;
+    position: relative;
+    display: none;
+  }
+  .story-panel.visible { display: block; }
+  .story-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+  .story-panel::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+  }
+  .story-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .story-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0 14px;
+  }
+  .story-section-header::before, .story-section-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gold-dim);
+    opacity: 0.4;
+  }
+  .story-section-header span {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+
+  .story-hook {
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .theme-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .theme-item {
+    flex: 1;
+    min-width: 200px;
+    background: rgba(201,168,76,0.03);
+    border: 1px solid rgba(201,168,76,0.12);
+    padding: 12px 16px;
+  }
+  .theme-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 6px;
+  }
+  .theme-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold);
+    margin-bottom: 5px;
+  }
+  .theme-text {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .beat-block {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+  }
+  .beat-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .beat-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 5px;
+  }
+  .beat-label {
+    font-size: 8px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-right: 6px;
+  }
+  .beat-text {
+    font-size: 1rem;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 600px) {
+    .tarot-card.lg, .tarot-card.md, .tarot-card.sc { width: 62px; height: 94px; }
+    .prow { gap: 8px; }
+    .story-panel { padding: 24px 20px; }
+    .theme-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="title-ornament">Maginomicon</div>
+    <h1>Tarot Story Generator</h1>
+    <p class="subtitle">The Maginomicon Reveals The Way</p>
+    <div class="divider"><span>✦</span></div>
+  </header>
+
+  <p class="instr" id="instr">Click the card to reveal the Plot Hook</p>
+
+  <div class="pyramid">
+
+    <!-- Row 1: Plot Hook -->
+    <div>
+      <div class="row-label">Plot Hook</div>
+      <div class="prow">
+        <div class="card-slot">
+          <div class="tarot-card lg clickable" id="c0" onclick="clickCard('hook')">
+            <div class="card-back"><svg viewBox="0 0 52 72" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="50" height="70" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L51 71M51 1L1 71" stroke="#c9a84c" stroke-width=".5"/><circle cx="26" cy="36" r="12" stroke="#c9a84c" stroke-width=".6"/><circle cx="26" cy="36" r="4" fill="#c9a84c" fill-opacity=".2"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Influences -->
+    <div>
+      <div class="row-label">Influences</div>
+      <div class="prow">
+        <div class="card-slot">
+          <div class="tarot-card md dim" id="c1" onclick="clickCard('pos')">
+            <div class="card-back"><svg viewBox="0 0 44 62" fill="none"><rect x="1" y="1" width="42" height="60" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L43 61M43 1L1 61" stroke="#c9a84c" stroke-width=".5"/><circle cx="22" cy="31" r="9" stroke="#c9a84c" stroke-width=".6"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Positive</div>
+        </div>
+        <div class="card-slot">
+          <div class="tarot-card md dim" id="c2" onclick="clickCard('neg')">
+            <div class="card-back"><svg viewBox="0 0 44 62" fill="none"><rect x="1" y="1" width="42" height="60" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L43 61M43 1L1 61" stroke="#c9a84c" stroke-width=".5"/><circle cx="22" cy="31" r="9" stroke="#c9a84c" stroke-width=".6"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Negative</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Acts -->
+    <div>
+      <div class="row-label">Acts</div>
+      <div class="prow">
+        <div class="card-slot">
+          <div class="tarot-card md dim" id="c3" onclick="clickCard('act1')">
+            <div class="card-back"><svg viewBox="0 0 44 62" fill="none"><rect x="1" y="1" width="42" height="60" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L43 61M43 1L1 61" stroke="#c9a84c" stroke-width=".5"/><circle cx="22" cy="31" r="9" stroke="#c9a84c" stroke-width=".6"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Act I</div>
+        </div>
+        <div class="card-slot">
+          <div class="tarot-card md dim" id="c4" onclick="clickCard('act2')">
+            <div class="card-back"><svg viewBox="0 0 44 62" fill="none"><rect x="1" y="1" width="42" height="60" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L43 61M43 1L1 61" stroke="#c9a84c" stroke-width=".5"/><circle cx="22" cy="31" r="9" stroke="#c9a84c" stroke-width=".6"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Act II</div>
+        </div>
+        <div class="card-slot">
+          <div class="tarot-card md dim" id="c5" onclick="clickCard('act3')">
+            <div class="card-back"><svg viewBox="0 0 44 62" fill="none"><rect x="1" y="1" width="42" height="60" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L43 61M43 1L1 61" stroke="#c9a84c" stroke-width=".5"/><circle cx="22" cy="31" r="9" stroke="#c9a84c" stroke-width=".6"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Act III</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Scenes -->
+    <div>
+      <div class="row-label" id="scene-lbl">Scenes</div>
+      <div class="prow">
+        <div class="card-slot">
+          <div class="tarot-card sc dim" id="s0" onclick="clickScene(0)">
+            <div class="card-back"><svg viewBox="0 0 36 52" fill="none"><rect x="1" y="1" width="34" height="50" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L35 51M35 1L1 51" stroke="#c9a84c" stroke-width=".5"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Scene 1</div>
+        </div>
+        <div class="card-slot">
+          <div class="tarot-card sc dim" id="s1" onclick="clickScene(1)">
+            <div class="card-back"><svg viewBox="0 0 36 52" fill="none"><rect x="1" y="1" width="34" height="50" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L35 51M35 1L1 51" stroke="#c9a84c" stroke-width=".5"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Scene 2</div>
+        </div>
+        <div class="card-slot">
+          <div class="tarot-card sc dim" id="s2" onclick="clickScene(2)">
+            <div class="card-back"><svg viewBox="0 0 36 52" fill="none"><rect x="1" y="1" width="34" height="50" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L35 51M35 1L1 51" stroke="#c9a84c" stroke-width=".5"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Scene 3</div>
+        </div>
+        <div class="card-slot">
+          <div class="tarot-card sc dim" id="s3" onclick="clickScene(3)">
+            <div class="card-back"><svg viewBox="0 0 36 52" fill="none"><rect x="1" y="1" width="34" height="50" rx="3" stroke="#c9a84c" stroke-width=".8"/><path d="M1 1L35 51M35 1L1 51" stroke="#c9a84c" stroke-width=".5"/></svg></div>
+            <div class="card-front"></div>
+          </div>
+          <div class="slot-label">Scene 4</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pyramid -->
+
+  <div class="pyramid-controls">
+    <button class="action-btn dim-btn" onclick="reset()">New Spread</button>
+  </div>
+
+  <!-- Story Panel -->
+  <div class="story-panel" id="story-panel">
+    <div class="story-title">Story Outline</div>
+    <div id="story-body"></div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const DECK=[{num:"0",name:"The Fool",sym:"🌟"},{num:"I",name:"The Magician",sym:"✨"},{num:"II",name:"The High Priestess",sym:"🌙"},{num:"III",name:"The Empress",sym:"🌿"},{num:"IV",name:"The Emperor",sym:"🏔"},{num:"V",name:"The Hierophant",sym:"🕊"},{num:"VI",name:"The Lovers",sym:"💞"},{num:"VII",name:"The Chariot",sym:"⚡"},{num:"VIII",name:"Strength",sym:"🦁"},{num:"IX",name:"The Hermit",sym:"🕯"},{num:"X",name:"Wheel of Fortune",sym:"☯"},{num:"XI",name:"Justice",sym:"⚖"},{num:"XII",name:"The Hanged Man",sym:"⌛"},{num:"XIII",name:"Death",sym:"🌑"},{num:"XIV",name:"Temperance",sym:"🌊"},{num:"XV",name:"The Devil",sym:"🔗"},{num:"XVI",name:"The Tower",sym:"🌩"},{num:"XVII",name:"The Star",sym:"⭐"},{num:"XVIII",name:"The Moon",sym:"🌘"},{num:"XIX",name:"The Sun",sym:"☀"},{num:"XX",name:"Judgement",sym:"📯"},{num:"XXI",name:"The World",sym:"🌍"},{num:"A♠",name:"Ace of Swords",sym:"⚔"},{num:"2♠",name:"Two of Swords",sym:"🙈"},{num:"3♠",name:"Three of Swords",sym:"💔"},{num:"4♠",name:"Four of Swords",sym:"💤"},{num:"5♠",name:"Five of Swords",sym:"🗡"},{num:"6♠",name:"Six of Swords",sym:"⛵"},{num:"7♠",name:"Seven of Swords",sym:"🦊"},{num:"8♠",name:"Eight of Swords",sym:"🕸"},{num:"9♠",name:"Nine of Swords",sym:"😰"},{num:"10♠",name:"Ten of Swords",sym:"🌅"},{num:"A♥",name:"Ace of Cups",sym:"🏆"},{num:"2♥",name:"Two of Cups",sym:"🤝"},{num:"3♥",name:"Three of Cups",sym:"🎉"},{num:"4♥",name:"Four of Cups",sym:"😔"},{num:"5♥",name:"Five of Cups",sym:"😢"},{num:"6♥",name:"Six of Cups",sym:"🏡"},{num:"7♥",name:"Seven of Cups",sym:"💭"},{num:"8♥",name:"Eight of Cups",sym:"🌌"},{num:"9♥",name:"Nine of Cups",sym:"😌"},{num:"10♥",name:"Ten of Cups",sym:"🌈"},{num:"A♦",name:"Ace of Pentacles",sym:"🌱"},{num:"2♦",name:"Two of Pentacles",sym:"🎭"},{num:"3♦",name:"Three of Pentacles",sym:"🔨"},{num:"4♦",name:"Four of Pentacles",sym:"🏦"},{num:"5♦",name:"Five of Pentacles",sym:"❄"},{num:"6♦",name:"Six of Pentacles",sym:"🤲"},{num:"7♦",name:"Seven of Pentacles",sym:"🌾"},{num:"8♦",name:"Eight of Pentacles",sym:"🛠"},{num:"9♦",name:"Nine of Pentacles",sym:"🌺"},{num:"10♦",name:"Ten of Pentacles",sym:"🏰"},{num:"A♣",name:"Ace of Wands",sym:"🔥"},{num:"2♣",name:"Two of Wands",sym:"🗺"},{num:"3♣",name:"Three of Wands",sym:"⛵"},{num:"4♣",name:"Four of Wands",sym:"🎊"},{num:"5♣",name:"Five of Wands",sym:"🥊"},{num:"6♣",name:"Six of Wands",sym:"🏅"},{num:"7♣",name:"Seven of Wands",sym:"🛡"},{num:"8♣",name:"Eight of Wands",sym:"🚀"},{num:"9♣",name:"Nine of Wands",sym:"🩹"},{num:"10♣",name:"Ten of Wands",sym:"🎒"}];
+
+const HOOKS={"0":"Somebody is in way over their head.","I":"A powerful individual possesses a unique resource.","II":"Dangerous hidden truths are resurfacing.","III":"A place or community needs replenishing.","IV":"A system of authority must be interfaced with.","V":"A wise being possesses helpful knowledge.","VI":"Two beings are intimately linked.","VII":"An objective must be achieved before a competitor, no matter the cost.","VIII":"The trust of a dangerous being is required.","IX":"A reclusive figure must be tracked down.","X":"A catastrophic reversal of circumstances.","XI":"An errant being must be held to account.","XII":"A sacrifice must be made or stopped for the greater good.","XIII":"An era, identity, or way of life is ending.","XIV":"Two opposing forces must be brought into balance.","XV":"Someone is in conflict with their own creation.","XVI":"A foundation everyone depended on is crumbling.","XVII":"Lost hope must be found again.","XVIII":"A dominant illusion must be shattered or installed.","XIX":"A source of illumination must be preserved.","XX":"The past has returned to demand a reckoning.","XXI":"Something long unfinished must finally be completed.","A♠":"An uncomfortable truth has surfaced and cannot be ignored.","2♠":"An important decision is being wilfully ignored.","3♠":"A trust has been broken.","4♠":"Time and safety are running out.","5♠":"A victory has been won, but at great cost.","6♠":"People must be moved out of harm's way before the window closes.","7♠":"Something has been dishonourably acquired.","8♠":"An influential figure is rendered helpless by their own thinking.","9♠":"Fear of a threat is causing more damage than the actual threat.","10♠":"Defeat must be accepted before progress can be made.","A♥":"An emotional event has changed the stakes entirely.","2♥":"A bond between two beings affects more than just themselves.","3♥":"Something is hidden beneath the surface of a celebration.","4♥":"Someone essential has turned their back on the world.","5♥":"Melancholy is preventing someone from doing what must be done.","6♥":"The past must be revisited to rediscover lost information.","7♥":"The way forward must be found despite many options.","8♥":"Someone is abandoning something that cannot be allowed to fall.","9♥":"Somebody's success is starting to work against them.","10♥":"Great comfort has brought even greater complacency.","A♦":"A window of opportunity has appeared that will not remain open for long.","2♦":"Two critical needs compete for the same finite resource.","3♦":"A common goal requires cooperation between unwilling parties.","4♦":"A critical resource is being withheld.","5♦":"Someone is about to lose it all.","6♦":"An act of generosity hides a secret agenda.","7♦":"An investment is about to sink or swim.","8♦":"Specialised knowledge must be sought to proceed.","9♦":"Hard-fought sovereignty is under threat.","10♦":"A vast treasure brings vast consequence.","A♣":"A volatile situation demands immediate attention.","2♣":"An important choice must be made before the full picture is clear.","3♣":"Something sent out is now returning.","4♣":"An established structure must be protected.","5♣":"Several competing agendas clash.","6♣":"A public triumph is not all it seems.","7♣":"Somebody is under threat but standing their ground.","8♣":"Events are moving too fast to control.","9♣":"Somebody who has already given everything takes one last stand.","10♣":"An unbearable burden is being carried alone."};
+
+const BEATS={"0":"The party acts without full knowledge — commit before understanding where it leads.","I":"A capable figure offers help or a secret — what they want in return is not yet clear.","II":"Something essential is concealed — earn or force access to guarded knowledge.","III":"Abundance and welcome — what will the party accept, and what does accepting cost?","IV":"Absolute authority — someone whose word is law, not easily circumvented.","V":"A gate opened only by satisfying a ritual or institutional demand nobody anticipated.","VI":"A fork — two paths, two loyalties — choice here closes the other door permanently.","VII":"A contest of will — match the force driving toward a goal or be overtaken.","VIII":"Something dangerous requires patience — calm rewarded, aggression punished.","IX":"A solitary figure holds what is needed — reaching and convincing them is the whole scene.","X":"Fortune turns — adapt to a situation that is no longer what it was.","XI":"A reckoning — testimony or judgement — truth established before anyone moves on.","XII":"The scene demands stillness — stop, surrender control, wait for understanding.","XIII":"Something ends — reckon with loss before proceeding.","XIV":"Fine balance — two forces in tension — precision required, not decisive action.","XV":"Someone is bound by addiction or coercion — that bondage shapes everything.","XVI":"Something depended on breaks apart — survive what remains.","XVII":"Genuine rest or clarity — something true and sustaining before what comes next.","XVIII":"Nothing is what it appears — find what is real.","XIX":"Openness and honesty — motives plain, will to act is all that's needed.","XX":"Someone is called to account — face the full weight of what has been done.","XXI":"Completion — everything converges and something is finally, fully resolved.","A♠":"A hard truth cuts through — named, cannot proceed until faced.","2♠":"A standoff — equally matched, equally unwilling — must be broken carefully.","3♠":"A betrayal revealed — wound acknowledged before anything else can happen.","4♠":"Enforced pause — rest and reflection demanded rather than action.","5♠":"Victory at a cost — what is gained and what is lost are inseparable.","6♠":"A passage — moving people or things from danger toward safety.","7♠":"Deception runs through the scene — catch it, expose it, or do it.","8♠":"Someone trapped — cannot find or accept the way out without help.","9♠":"Fear driving decisions — paranoia must be confronted.","10♠":"Aftermath — find what survives, what it means, what comes from it.","A♥":"Unexpected emotional opening — confession or offered trust changes the scene.","2♥":"Scene turns on a bond — understand, use, protect, or threaten that connection.","3♥":"A gathering with something running beneath — navigate what's visible and what isn't.","4♥":"Someone needed is unreachable — withdrawn, blind to what's in front of them.","5♥":"Scene steeped in grief — path runs directly through someone's loss.","6♥":"The past intrudes — old face, old promise — dealt with before anything moves.","7♥":"A tangle of options — most illusions or traps — only one is real.","8♥":"Someone is leaving — scene is about what they abandon and what that means.","9♥":"Satisfaction and self-containment — someone has what they want and won't be disturbed.","10♥":"Bonds between people are the terrain — understand what holds the group together.","A♦":"Opportunity opens — evaluate and claim or refuse before it closes.","2♦":"Two demands compete for the same resource — satisfying both is not possible.","3♦":"Something must be built or repaired — who does it, how, and with whom.","4♦":"Access controlled by someone who fears loss — prying it open is the central problem.","5♦":"Genuine deprivation — what the party does reveals something about who they are.","6♦":"Resources change hands — who gives and who receives tells the party something important.","7♦":"Someone assesses their long investment — is the answer enough to justify continuing?","8♦":"Expertise is the key — requires demonstrating real understanding of the craft.","9♦":"Self-sufficient wealth — make someone care who has absolutely no reason to.","10♦":"Old wealth, old debts — entangled in a legacy that doesn't care about their agenda.","A♣":"A spark — discovery or ignition — sets events into sudden motion.","2♣":"Survey what lies ahead and commit to a direction before having all the information.","3♣":"A time of waiting while established events play out.","4♣":"A gathering containing something the party must find, reach, or protect.","5♣":"Competing agendas — multiple parties want different things, navigate the chaos.","6♣":"A public moment of recognition — manage exposure as much as seize opportunity.","7♣":"Hold ground, information, or a position — defend it against those who want it.","8♣":"Scene moves fast — swift decisions — hesitation has real consequences.","9♣":"Depleted, facing one more demand — what remains when everything easy is spent.","10♣":"Someone carries far more than they should alone — what is that burden doing to them."};
+
+const MODS={"0":{p:"The world is open and trusting.",n:"Everyone is out of their depth."},"I":{p:"Knowledge and capability are abundant.",n:"Everyone has an agenda; every offer of help comes wrapped in manipulation."},"II":{p:"Hidden layers reward those who look deeper.",n:"Nothing is transparent; silence and withheld truth define every interaction."},"III":{p:"The environment is fertile — people willing, resources available.",n:"Overabundance breeds complacency; too comfortable to risk anything."},"IV":{p:"Order and authority are on the party's side.",n:"Everything governed by rigid hierarchy; nothing moves without approval from above."},"V":{p:"Tradition and shared belief create common ground.",n:"Doctrine is law; anything outside accepted norms meets suspicion."},"VI":{p:"Deep personal bonds define the landscape — loyalty and trust run high.",n:"Every relationship tangled with competing loyalties."},"VII":{p:"The situation has momentum — things are moving, the party can ride it.",n:"Everything is a competition; other forces push hard toward their own ends."},"VIII":{p:"Patience and gentleness are the currencies here.",n:"Aggression and dominance set the tone; restraint is read as weakness."},"IX":{p:"Wisdom is available to those who seek it.",n:"Everyone is isolated; trust is scarce and people guard what they know."},"X":{p:"The timing is fortunate — circumstances cycling in the party's favour.",n:"Inherently unstable; conditions shift constantly, nothing can be relied upon."},"XI":{p:"Truth carries weight — evidence and fairness are respected.",n:"Every action has a price; consequences enforced strictly, including for the party."},"XII":{p:"A culture of patience and sacrifice — people understand some things take time.",n:"Nothing gained without meaningful cost."},"XIII":{p:"The old order has ended — people are ready for change.",n:"Everything in a state of loss and ending; grief and resistance define the mood."},"XIV":{p:"Balance and moderation valued — people measured and open to middle ground.",n:"Every faction is extreme; no appetite for compromise."},"XV":{p:"Desire and obsession can be used as levers.",n:"Addiction and dependency shape the landscape."},"XVI":{p:"Existing power structures are crumbling — the old guard has lost its grip.",n:"Everything on the verge of collapse; no foundation can be trusted."},"XVII":{p:"Hope is alive — people believe in better outcomes and will act on it.",n:"Despair is prevailing; people have stopped believing anything they do matters."},"XVIII":{p:"Ambiguity provides cover — things unclear for everyone.",n:"Reality is distorted; rumour and fear shape belief more than facts."},"XIX":{p:"Clarity and transparency define the situation.",n:"Everything exposed; no cover, no room for subtlety."},"XX":{p:"The past is being reckoned with — people ready to account for old wrongs.",n:"History casts a long shadow; old grievances define how everyone is seen."},"XXI":{p:"Everything is in its right place — conditions for success fully assembled.",n:"The situation has calcified; nothing shifts without enormous effort."},"A♠":{p:"Truth valued above comfort — honesty and direct speech respected.",n:"Bluntness without compassion; people cut to the bone and call it honesty."},"2♠":{p:"Neutrality is available — those who haven't chosen sides can be reached.",n:"Everything at an impasse; nothing moves."},"3♠":{p:"People here have faced hard truths and are stronger for it.",n:"Pain and betrayal have left their mark; trust is threadbare."},"4♠":{p:"A culture of deliberation — people think before they act.",n:"Inaction masquerades as prudence."},"5♠":{p:"Pragmatism rules.",n:"Win-at-all-costs mentality; ethics seen as obstacles."},"6♠":{p:"Transition and movement are the norm.",n:"Permanent state of flight; nothing settled."},"7♠":{p:"Cunning and adaptability are prized.",n:"Dishonesty is endemic."},"8♠":{p:"People know how to work within limits.",n:"Learned helplessness; people believe they have no options even when they do."},"9♠":{p:"Vigilance and awareness are cultural strengths.",n:"Anxiety and dread are dominant; fear shapes every decision."},"10♠":{p:"People have hit bottom and rebuilt — failure understood as a beginning.",n:"Defeat is the prevailing story."},"A♥":{p:"Emotional openness — people generous and willing to connect.",n:"Sentiment overrides reason."},"2♥":{p:"Mutual trust and partnership are the norm.",n:"Every relationship carries unspoken terms."},"3♥":{p:"Connection and shared joy are abundant.",n:"Social bonds create exclusivity; outsiders shut out."},"4♥":{p:"A meditative stillness — people reflective, not easily stirred.",n:"Disengagement widespread; community turned inward."},"5♥":{p:"People understand grief — compassion is instinctive.",n:"Loss defines the landscape; people stuck in what was."},"6♥":{p:"Nostalgia and memory are powerful forces.",n:"The past is an anchor; old wounds prevent moving forward."},"7♥":{p:"Imagination and possibility are valued.",n:"Wishful thinking has replaced clear judgement."},"8♥":{p:"People have learned when to let go.",n:"Culture of withdrawal; people disengage when things get difficult."},"9♥":{p:"Contentment and satisfaction are widespread.",n:"Complacency runs deep."},"10♥":{p:"A deep sense of community — people look after each other.",n:"So tightly bonded outsiders are permanently viewed with suspicion."},"A♦":{p:"Material opportunity is genuinely present.",n:"Everything has a price; generosity absent."},"2♦":{p:"Flexibility and adaptability are strengths.",n:"Nothing is stable; everything in constant flux."},"3♦":{p:"Craft and collaboration are deeply respected.",n:"Credit fiercely contested; collaboration collapses under ego."},"4♦":{p:"Stability and security are primary values.",n:"Hoarding and control define the culture."},"5♦":{p:"Hardship has created solidarity.",n:"Poverty and deprivation are defining conditions."},"6♦":{p:"Generosity is a cultural value.",n:"Charity comes with strings; giving is an act of control."},"7♦":{p:"Patient investment is respected.",n:"Defined by waiting for a payoff that never quite arrives."},"8♦":{p:"Skill and mastery are the highest currency.",n:"Obsessive focus on craft leaves people blind to everything else."},"9♦":{p:"Self-sufficiency and refinement define the culture.",n:"Privilege has insulated people from consequence."},"10♦":{p:"Legacy and long-term thinking shape everything.",n:"Inheritance locks everything in place."},"A♣":{p:"Energy and inspiration are contagious.",n:"Recklessness everywhere; ideas outrun capacity to execute."},"2♣":{p:"A spirit of planning and ambition prevails.",n:"Everyone waiting for someone else to go first."},"3♣":{p:"Things already in motion — groundwork laid.",n:"Everything a waiting game; progress depends on factors no one can influence."},"4♣":{p:"Community and belonging define the atmosphere.",n:"Comfort has made people resistant to disruption."},"5♣":{p:"Competitive energy is productive — friction sharpens.",n:"Every group fighting internally."},"6♣":{p:"Achievement is recognised and respected.",n:"Success breeds resentment."},"7♣":{p:"Determination and resolve are respected.",n:"The party is outnumbered in every room; opposition relentless."},"8♣":{p:"Things move quickly — pace is an asset.",n:"Pace is overwhelming; decisions made before information is complete."},"9♣":{p:"Resilience and hard-won experience define the people.",n:"Exhaustion universal; everyone worn down."},"10♣":{p:"People accustomed to working hard under pressure.",n:"Everyone already overextended."}};
+
+let pool=[],drawn={},scenes=[[],[],[]],revealedScenes=[[],[],[]],phase=0;
+
+function shuffle(a){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function pick(){if(!pool.length)pool=shuffle(DECK);return{...pool.pop()};}
+
+function cardHTML(c){
+  return `<div class="card-num">${c.num}</div><div class="card-sym">${c.sym}</div><div class="card-name">${c.name}</div>`;
+}
+
+function revealEl(id,c){
+  const el=document.getElementById(id);
+  el.classList.remove('dim','clickable');
+  el.classList.add('revealed');
+  el.querySelector('.card-front').innerHTML=cardHTML(c);
+  el.style.cursor='default';
+}
+function makeClickable(id){
+  const el=document.getElementById(id);
+  el.classList.remove('dim');
+  el.classList.add('clickable');
+}
+function resetScenes(){
+  for(let i=0;i<4;i++){
+    const el=document.getElementById('s'+i);
+    el.classList.remove('revealed','clickable');
+    el.classList.add('dim');
+    el.querySelector('.card-front').innerHTML='';
+    el.style.cursor='default';
+  }
+}
+
+function clickCard(role){
+  if(role==='hook'&&phase===0){
+    drawn.hook=pick();revealEl('c0',drawn.hook);makeClickable('c1');setInstr('Click the Positive Influence');phase=1;
+  } else if(role==='pos'&&phase===1){
+    drawn.pos=pick();revealEl('c1',drawn.pos);makeClickable('c2');setInstr('Click the Negative Influence');phase=2;
+  } else if(role==='neg'&&phase===2){
+    drawn.neg=pick();revealEl('c2',drawn.neg);makeClickable('c3');setInstr('Click Act I');phase=3;
+  } else if(role==='act1'&&phase===3){
+    drawn.act1=pick();revealEl('c3',drawn.act1);
+    scenes[0]=[pick(),pick(),pick(),pick()];revealedScenes[0]=[];
+    resetScenes();makeClickable('s0');
+    document.getElementById('scene-lbl').textContent='Act I — Scenes';
+    setInstr('Click Scene 1');phase=4;
+  } else if(role==='act2'&&phase===8){
+    drawn.act2=pick();revealEl('c4',drawn.act2);
+    scenes[1]=[pick(),pick(),pick(),pick()];revealedScenes[1]=[];
+    resetScenes();makeClickable('s0');
+    document.getElementById('scene-lbl').textContent='Act II — Scenes';
+    setInstr('Click Scene 1');phase=9;weaveStory();
+  } else if(role==='act3'&&phase===13){
+    drawn.act3=pick();revealEl('c5',drawn.act3);
+    scenes[2]=[pick(),pick(),pick(),pick()];revealedScenes[2]=[];
+    resetScenes();makeClickable('s0');
+    document.getElementById('scene-lbl').textContent='Act III — Scenes';
+    setInstr('Click Scene 1');phase=14;weaveStory();
+  }
+}
+
+function clickScene(idx){
+  let act,sp;
+  if(phase>=4&&phase<=7){act=0;sp=phase-4;}
+  else if(phase>=9&&phase<=12){act=1;sp=phase-9;}
+  else if(phase>=14&&phase<=17){act=2;sp=phase-14;}
+  else return;
+  if(idx!==sp)return;
+
+  const c=scenes[act][idx];
+  revealEl('s'+idx,c);
+  revealedScenes[act].push(c);
+
+  weaveStory();
+
+  const next=idx+1;
+  if(next<4){
+    makeClickable('s'+next);
+    setInstr('Click Scene '+(next+1));
+    phase++;
+  } else {
+    if(act===0){makeClickable('c4');setInstr('Click Act II');phase=8;}
+    else if(act===1){makeClickable('c5');setInstr('Click Act III');phase=13;}
+    else{setInstr('✦ The spread is complete');phase=18;}
+  }
+}
+
+function setInstr(t){document.getElementById('instr').textContent=t;}
+
+function reset(){
+  pool=[];drawn={};scenes=[[],[],[]];revealedScenes=[[],[],[]];phase=0;
+  document.getElementById('story-panel').classList.remove('visible');
+  document.getElementById('story-body').innerHTML='';
+  document.getElementById('scene-lbl').textContent='Scenes';
+  setInstr('Click the card to reveal the Plot Hook');
+  ['c0','c1','c2','c3','c4','c5'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.remove('revealed','clickable');
+    el.querySelector('.card-front').innerHTML='';
+    if(i===0){el.classList.remove('dim');el.classList.add('clickable');}
+    else el.classList.add('dim');
+    el.style.cursor=i===0?'pointer':'default';
+  });
+  resetScenes();
+}
+
+function sectionHeader(label){
+  return `<div class="story-section-header"><span>${label}</span></div>`;
+}
+
+function weaveStory(){
+  const panel=document.getElementById('story-panel');
+  panel.classList.add('visible');
+  const h=drawn.hook,pos=drawn.pos,neg=drawn.neg,a1=drawn.act1,a2=drawn.act2,a3=drawn.act3;
+  let html='';
+
+  if(h){
+    html+=sectionHeader('Plot Hook');
+    html+=`<p class="story-hook">${HOOKS[h.num]||''}</p>`;
+  }
+  if(pos||neg){
+    html+=sectionHeader('Themes');
+    html+='<div class="theme-row">';
+    if(pos){
+      html+=`<div class="theme-item"><div class="theme-label">Positive Theme</div><div class="theme-card-name">${pos.name}</div><div class="theme-text">${MODS[pos.num]?MODS[pos.num].p:''}</div></div>`;
+    }
+    if(neg){
+      html+=`<div class="theme-item"><div class="theme-label">Negative Theme</div><div class="theme-card-name">${neg.name}</div><div class="theme-text">${MODS[neg.num]?MODS[neg.num].n:''}</div></div>`;
+    }
+    html+='</div>';
+  }
+
+  function actBlock(label, actCard, revScenes){
+    if(!actCard) return '';
+    let h=sectionHeader(label);
+    h+=`<div class="beat-block"><div class="beat-card-name">${actCard.name}</div><p class="beat-text">${HOOKS[actCard.num]||''}</p></div>`;
+    revScenes.forEach((c,i)=>{
+      h+=`<div class="beat-block"><div class="beat-card-name"><span class="beat-label">Scene ${i+1}</span>${c.name}</div><p class="beat-text">${BEATS[c.num]||''}</p></div>`;
+    });
+    return h;
+  }
+
+  html+=actBlock('Act I — Beginning', a1, revealedScenes[0]);
+  html+=actBlock('Act II — Middle', a2, revealedScenes[1]);
+  html+=actBlock('Act III — End', a3, revealedScenes[2]);
+
+  document.getElementById('story-body').innerHTML=html;
+}
+
+// init
+document.getElementById('c0').classList.add('clickable');
+document.getElementById('c0').style.cursor='pointer';
+</script>
+</body>
+</html>

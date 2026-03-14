@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Location Forge</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a6030;
+    --deep: #080608;
+    --panel: #0e0b10;
+    --border: rgba(201,168,76,0.25);
+    --text: #d4c5a0;
+    --text-dim: #7a6e58;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'EB Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(201,168,76,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 70%, rgba(201,168,76,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(201,168,76,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.15) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, rgba(201,168,76,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 50%, rgba(201,168,76,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(4,2,6,0.85) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+  header { text-align: center; padding: 20px 0 40px; }
+  .title-ornament {
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 16px;
+      }
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: var(--gold-light);
+    text-shadow: 0 0 40px rgba(201,168,76,0.4), 0 0 80px rgba(201,168,76,0.15);
+    letter-spacing: 4px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 10px 0 32px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim));
+  }
+  .divider::after { background: linear-gradient(to left, transparent, var(--gold-dim)); }
+  .divider span { color: var(--gold); font-size: 18px; }
+
+  .selector-group { margin-bottom: 12px; }
+  .selector-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin: 10px 0 6px; }
+  .selector-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .sel-btn {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sel-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .sel-btn.active {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    background: rgba(201,168,76,0.08);
+    box-shadow: 0 0 12px rgba(201,168,76,0.1);
+  }
+
+  .dice-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 700px) { .dice-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .die-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 10px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+  }
+  .die-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .die-card.revealed { border-color: rgba(201,168,76,0.6); box-shadow: 0 0 20px rgba(201,168,76,0.1); }
+  .die-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .die-svg-wrap { width: 70px; height: 70px; margin: 0 auto 14px; }
+  .die-svg-wrap svg { width: 100%; height: 100%; transition: filter 0.3s; }
+  .die-card.rolling .die-svg-wrap svg { animation: spinDie 0.06s linear infinite; }
+  .die-card.revealed .die-svg-wrap svg { animation: none; }
+  @keyframes spinDie {
+    0%   { transform: rotate(0deg) scale(1); }
+    25%  { transform: rotate(90deg) scale(1.05); }
+    50%  { transform: rotate(180deg) scale(1); }
+    75%  { transform: rotate(270deg) scale(1.05); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  .die-category {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+      }
+  .die-roll-number {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    min-height: 28px;
+  }
+  .die-result-name {
+    font-size: 15px;
+    color: var(--text);
+    font-style: italic;
+    line-height: 1.4;
+    min-height: 32px;
+    transition: color 0.4s;
+  }
+  .die-card.revealed .die-result-name { color: var(--text); }
+
+  #card-d4 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(220,50,50,0.5)); }
+  #card-d4 .die-roll-number { color: #dc3232; }
+  #card-d4.revealed { border-color: rgba(220,50,50,0.5); box-shadow: 0 0 20px rgba(220,50,50,0.12); }
+
+  #card-d6 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(60,180,80,0.5)); }
+  #card-d6 .die-roll-number { color: #3cb450; }
+  #card-d6.revealed { border-color: rgba(60,180,80,0.5); box-shadow: 0 0 20px rgba(60,180,80,0.12); }
+
+  #card-d8 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(220,190,40,0.5)); }
+  #card-d8 .die-roll-number { color: #dcbe28; }
+  #card-d8.revealed { border-color: rgba(220,190,40,0.5); box-shadow: 0 0 20px rgba(220,190,40,0.12); }
+
+  #card-d12 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(150,60,210,0.5)); }
+  #card-d12 .die-roll-number { color: #963cd2; }
+  #card-d12.revealed { border-color: rgba(150,60,210,0.5); box-shadow: 0 0 20px rgba(150,60,210,0.12); }
+
+  #card-d20 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(50,130,220,0.5)); }
+  #card-d20 .die-roll-number { color: #3282dc; }
+  #card-d20.revealed { border-color: rgba(50,130,220,0.5); box-shadow: 0 0 20px rgba(50,130,220,0.12); }
+
+  .roll-section { text-align: center; margin-bottom: 40px; }
+  .roll-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 16px 48px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .roll-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(201,168,76,0.08) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  .roll-btn:hover::before { transform: translateX(100%); }
+  .roll-btn:hover { background: rgba(201,168,76,0.06); box-shadow: 0 0 30px rgba(201,168,76,0.15); }
+  .roll-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .result-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s, transform 0.8s;
+  }
+  .result-panel.visible { opacity: 1; transform: translateY(0); }
+  .result-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+  .corner-ornament {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--gold-dim);
+    border-style: solid;
+    opacity: 0.5;
+  }
+  .corner-ornament.tl { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+  .corner-ornament.tr { top: 8px; right: 8px; border-width: 1px 1px 0 0; }
+  .corner-ornament.bl { bottom: 8px; left: 8px; border-width: 0 0 1px 1px; }
+  .corner-ornament.br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+  .result-panel-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 5px;
+    color: var(--gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .location-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    color: var(--gold-light);
+    text-align: center;
+    margin-bottom: 6px;
+    text-shadow: 0 0 20px rgba(201,168,76,0.3);
+  }
+  .location-tagline {
+    font-style: italic;
+    color: var(--text-dim);
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 32px;
+  }
+  .results-breakdown { display: flex; flex-direction: column; gap: 14px; }
+  .result-row { border-left: 2px solid rgba(201,168,76,0.15); padding-left: 20px; }
+  .result-row-header { display: flex; align-items: center; gap: 12px; }
+  .result-die-pip {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    border: 1px solid;
+    padding: 2px 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .result-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .result-value {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="title-ornament">✦ &nbsp; Maginomicon &nbsp; ✦</div>
+    <h1>Location Forge</h1>
+    <p class="subtitle">Form the Elements. Find your Place.</p>
+  </header>
+
+  <div class="divider"><span>⬡</span></div>
+
+  <!-- Single selector -->
+  <div class="selector-group">
+    <div class="selector-label">⬡ Exterior</div>
+    <div class="btn-row">
+      <button class="sel-btn active" onclick="setTable('exterior','general', this)">General</button>
+      <button class="sel-btn" onclick="setTable('exterior','fantasy', this)">Fantasy</button>
+      <button class="sel-btn" onclick="setTable('exterior','scifi', this)">Sci-Fi</button>
+      <button class="sel-btn" onclick="setTable('exterior','horror', this)">Horror</button>
+      <button class="sel-btn" onclick="setTable('exterior','postapoc', this)">Post-Apocalyptic</button>
+      <button class="sel-btn" onclick="setTable('exterior','cyberpunk', this)">Cyberpunk</button>
+      <button class="sel-btn" onclick="setTable('exterior','historical', this)">Historical</button>
+    </div>
+    <div class="selector-label">⬡ Interior</div>
+    <div class="btn-row">
+      <button class="sel-btn" onclick="setTable('interior','rooms', this)">General</button>
+      <button class="sel-btn" onclick="setTable('interior','dungeon', this)">Dungeon</button>
+      <button class="sel-btn" onclick="setTable('interior','starship', this)">Starship</button>
+      <button class="sel-btn" onclick="setTable('interior','ship', this)">Ship</button>
+      <button class="sel-btn" onclick="setTable('interior','castle', this)">Castle</button>
+      <button class="sel-btn" onclick="setTable('interior','station', this)">Space Station</button>
+      <button class="sel-btn" onclick="setTable('interior','cave', this)">Cave System</button>
+      <button class="sel-btn" onclick="setTable('interior','sewer', this)">Sewer / Undercity</button>
+      <button class="sel-btn" onclick="setTable('interior','mega', this)">Megastructure</button>
+    </div>
+  </div>
+
+  <div class="dice-grid">
+    <!-- D4 -->
+    <div class="die-card" id="card-d4">
+      <div class="die-label">D4</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,8 92,85 8,85" fill="none" stroke="#dc3232" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="50" y1="8" x2="50" y2="85" stroke="#dc3232" stroke-width="0.8" opacity="0.3"/>
+          <line x1="8" y1="85" x2="71" y2="46" stroke="#dc3232" stroke-width="0.8" opacity="0.3"/>
+          <line x1="92" y1="85" x2="29" y2="46" stroke="#dc3232" stroke-width="0.8" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="die-category">Element</div>
+      <div class="die-roll-number" id="num-d4">—</div>
+      <div class="die-result-name" id="res-d4">Nature</div>
+    </div>
+    <!-- D6 -->
+    <div class="die-card" id="card-d6">
+      <div class="die-label">D6</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="15" y="15" width="70" height="70" fill="none" stroke="#3cb450" stroke-width="2"/>
+          <line x1="15" y1="15" x2="30" y2="5" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="85" y1="15" x2="95" y2="5" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="95" y1="5" x2="30" y2="5" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="85" y1="85" x2="95" y2="75" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="95" y1="5" x2="95" y2="75" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="30" y1="5" x2="30" y2="15" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="die-category">Size</div>
+      <div class="die-roll-number" id="num-d6">—</div>
+      <div class="die-result-name" id="res-d6">Scale</div>
+    </div>
+    <!-- D8 -->
+    <div class="die-card" id="card-d8">
+      <div class="die-label">D8</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,10 88,50 50,90 12,50" fill="none" stroke="#dcbe28" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="50" y1="10" x2="50" y2="90" stroke="#dcbe28" stroke-width="0.8" opacity="0.3"/>
+          <line x1="12" y1="50" x2="88" y2="50" stroke="#dcbe28" stroke-width="0.8" opacity="0.3"/>
+          <line x1="50" y1="10" x2="88" y2="50" stroke="#dcbe28" stroke-width="0.8" opacity="0.25"/>
+          <line x1="50" y1="10" x2="12" y2="50" stroke="#dcbe28" stroke-width="0.8" opacity="0.25"/>
+        </svg>
+      </div>
+      <div class="die-category">Ambiance</div>
+      <div class="die-roll-number" id="num-d8">—</div>
+      <div class="die-result-name" id="res-d8">Atmosphere</div>
+    </div>
+    <!-- D12 -->
+    <div class="die-card" id="card-d12">
+      <div class="die-label">D12</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- outer pentagon -->
+          <polygon points="50,8 92,38 76,88 24,88 8,38" fill="none" stroke="#963cd2" stroke-width="1.5" opacity="0.55"/>
+          <!-- inner pentagon rotated 36deg -->
+          <polygon points="50,30 68,43 62,65 38,65 32,43" fill="none" stroke="#963cd2" stroke-width="2"/>
+          <!-- spokes -->
+          <line x1="50" y1="30" x2="50" y2="8" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="68" y1="43" x2="92" y2="38" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="62" y1="65" x2="76" y2="88" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="38" y1="65" x2="24" y2="88" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="32" y1="43" x2="8" y2="38" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="die-category">Inhabitants</div>
+      <div class="die-roll-number" id="num-d12">—</div>
+      <div class="die-result-name" id="res-d12">Population</div>
+    </div>
+    <!-- D20 -->
+    <div class="die-card" id="card-d20">
+      <div class="die-label">D20</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="40.3,60.6 40.3,11.5 80.1,37.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.30"/>
+          <polygon points="40.3,60.6 80.1,37.6 72.3,87.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.33"/>
+          <polygon points="40.3,60.6 8.0,45.1 40.3,11.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.36"/>
+          <polygon points="40.3,60.6 72.3,87.4 27.7,92.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.41"/>
+          <polygon points="40.3,60.6 27.7,92.0 8.0,45.1" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.43"/>
+          <polygon points="72.3,8.0 80.1,37.6 40.3,11.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.48"/>
+          <polygon points="92.0,54.9 72.3,87.4 80.1,37.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.52"/>
+          <polygon points="27.7,12.6 40.3,11.5 8.0,45.1" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.58"/>
+          <polygon points="92.0,54.9 80.1,37.6 72.3,8.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.61"/>
+          <polygon points="72.3,8.0 40.3,11.5 27.7,12.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.65"/>
+          <polygon points="59.7,88.5 27.7,92.0 72.3,87.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.65"/>
+          <polygon points="19.9,62.4 8.0,45.1 27.7,92.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.69"/>
+          <polygon points="59.7,88.5 72.3,87.4 92.0,54.9" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.72"/>
+          <polygon points="27.7,12.6 8.0,45.1 19.9,62.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.78"/>
+          <polygon points="19.9,62.4 27.7,92.0 59.7,88.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.82"/>
+          <polygon points="59.7,39.4 92.0,54.9 72.3,8.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.87"/>
+          <polygon points="59.7,39.4 72.3,8.0 27.7,12.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.89"/>
+          <polygon points="59.7,39.4 59.7,88.5 92.0,54.9" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.94"/>
+          <polygon points="59.7,39.4 27.7,12.6 19.9,62.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.97"/>
+          <polygon points="59.7,39.4 19.9,62.4 59.7,88.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="1.00"/>
+        </svg>
+      </div>
+      <div class="die-category">Function</div>
+      <div class="die-roll-number" id="num-d20">—</div>
+      <div class="die-result-name" id="res-d20">What It Is</div>
+    </div>
+  </div>
+
+  <div class="roll-section">
+    <button class="roll-btn" id="rollBtn" onclick="rollAll()">ATTUNE</button>
+  </div>
+
+  <div class="result-panel" id="resultPanel">
+    <div class="corner-ornament tl"></div>
+    <div class="corner-ornament tr"></div>
+    <div class="corner-ornament bl"></div>
+    <div class="corner-ornament br"></div>
+    <div class="result-panel-title">⬡ &nbsp; Location &nbsp; ⬡</div>
+    <div id="resultContent"></div>
+  </div>
+</div>
+
+<script>
+const TABLES = {
+  d4: {
+    1: { name: "Fire",  quality: "Hot & Dry"  },
+    2: { name: "Water", quality: "Cold & Wet" },
+    3: { name: "Air",   quality: "Hot & Wet"  },
+    4: { name: "Earth", quality: "Cold & Dry" }
+  },
+  d6: {
+    1: "Tiny", 2: "Small", 3: "Modest",
+    4: "Large", 5: "Vast", 6: "Colossal"
+  },
+  d8: {
+    1: "Serene", 2: "Welcoming", 3: "Industrious", 4: "Mundane",
+    5: "Tense", 6: "Eerie", 7: "Oppressive", 8: "Chaotic"
+  },
+  d12: {
+    1: "Empty", 2: "Near-deserted", 3: "A handful", 4: "Sparsely populated",
+    5: "Light traffic", 6: "Moderate", 7: "Steady footfall", 8: "Busy",
+    9: "Heavily trafficked", 10: "Packed", 11: "Overwhelmed", 12: "Crowded"
+  },
+  d20: {
+    exterior: {
+      general:  {1:"Derelict",2:"Alley/Slum",3:"Hovel/Shelter",4:"Dwelling",5:"Workshop",6:"Warehouse",7:"Market",8:"Tavern",9:"School",10:"Prison",11:"Graveyard",12:"Hospital",13:"Archive",14:"Place of Worship",15:"Court",16:"Fortification",17:"Port",18:"Monument",19:"Seat of Power",20:"Palace"},
+      fantasy:  {1:"Ruins",2:"Fighting Pit",3:"Thieves' Den",4:"Hovel",5:"Cottage",6:"Stable",7:"Tavern",8:"Market Stall",9:"Smithy",10:"Jailhouse",11:"Apothecary",12:"Barracks",13:"Guild Hall",14:"Library/Scriptorium",15:"Courthouse",16:"Sanctum",17:"Harbour/Docks",18:"Tower",19:"Manor",20:"Castle"},
+      scifi:    {1:"Derelict",2:"Warehouse District",3:"Habitation",4:"Nutrition",5:"Cantina",6:"Fabrication Plant",7:"Trading Post",8:"Transit Hub",9:"Recreational",10:"Medical",11:"Data Vault",12:"Research Lab",13:"Comms Tower",14:"Security",15:"Defences",16:"Reactor Core",17:"Docking Bay",18:"Biodome",19:"Corporate HQ",20:"Command Centre"},
+      horror:   {1:"Derelict",2:"Slaughterhouse",3:"Mortuary",4:"Cemetery",5:"Motel",6:"Roadhouse",7:"Docks/Freight",8:"Shop",9:"School",10:"Park",11:"Police Station",12:"Carnival/Fair",13:"Library",14:"Laboratory",15:"Asylum",16:"Hospital",17:"Lighthouse/Watchtower",18:"Orphanage",19:"Sanctuary",20:"Manor House"},
+      postapoc: {1:"Bolt Hole",2:"Mass Grave",3:"Rad Zone",4:"Salvage Yard",5:"Cages",6:"Scavenger Market",7:"Diner",8:"Checkpoint",9:"Grow Op",10:"Fuel Depot",11:"Clinic",12:"Supply Cache",13:"Watchtower",14:"Shrine",15:"Fighting Pit",16:"Archives",17:"Fortification",18:"Bunker",19:"Warlord Compound",20:"Vault"},
+      cyberpunk:{1:"Derelict",2:"Squat",3:"Coffin Hotel",4:"Hack Den",5:"Chop Shop",6:"Noodle Bar",7:"Fight Club",8:"Market",9:"Warehouse",10:"Nightclub",11:"Hab Block",12:"Ripperdoc",13:"Security Precinct",14:"Vertical Farm",15:"Transit Station",16:"Body Bank",17:"Data Centre",18:"Broadcast Studio",19:"Landing Pad",20:"Corporate HQ"},
+      historical:{1:"Derelict",2:"Tenement",3:"Tavern/Alehouse",4:"Gaol",5:"Dockside",6:"Market",7:"Barracks",8:"Broadsheets",9:"Bank",10:"Asylum",11:"Hospital",12:"Guild Hall",13:"Library/Archive",14:"Courthouse",15:"Theatre",16:"Church",17:"Townhouse",18:"Museum",19:"Gentleman's Club",20:"Palace"}
+    },
+    interior: {
+      rooms:   {1:"Closet",2:"Storeroom",3:"Bedroom",4:"Kitchen",5:"Dining Room",6:"Study",7:"Workshop",8:"Bathroom",9:"Library",10:"Gallery",11:"Guard Room",12:"Vault",13:"Cellar",14:"Attic",15:"Audience Chamber",16:"Throne Room",17:"Torture Chamber",18:"Ritual Room",19:"Secret Passage",20:"Hidden Chamber"},
+      dungeon:  {1:"Collapsed Tunnel",2:"Guard Post",3:"Barracks",4:"Kennel",5:"Torture Chamber",6:"Prison Cell",7:"Armoury",8:"Mess Hall",9:"Trophy Room",10:"Shrine",11:"Trap Corridor",12:"Alchemical Lab",13:"Crypt",14:"Flooded Chamber",15:"Vault",16:"Throne Room",17:"Summoning Circle",18:"Pit",19:"Lair",20:"Inner Sanctum"},
+      starship: {1:"Access Crawlway",2:"Crew Bunk",3:"Galley",4:"Head",5:"Cargo Bay",6:"Engineering",7:"Armoury",8:"Medbay",9:"Science Lab",10:"Communications Array",11:"Observation Deck",12:"Brig",13:"Weapons Control",14:"Cryosleep Bay",15:"AI Core",16:"Captain's Quarters",17:"War Room",18:"Docking Clamp",19:"Reactor Room",20:"Bridge"},
+      ship:     {1:"Bilge",2:"Hold",3:"Crew Quarters",4:"Galley",5:"Brig",6:"Armoury",7:"Surgeon's Berth",8:"Carpenter's Store",9:"Chart Room",10:"Powder Magazine",11:"Gun Deck",12:"Quartermaster's Store",13:"First Mate's Cabin",14:"Officer's Mess",15:"Crow's Nest",16:"Fo'c'sle",17:"Poop Deck",18:"Armoured Hold",19:"Secret Compartment",20:"Captain's Cabin"},
+      castle:   {1:"Latrine",2:"Servant's Quarters",3:"Guardroom",4:"Stables",5:"Kitchen",6:"Chapel",7:"Armoury",8:"Dungeon",9:"Great Hall",10:"Barracks",11:"Steward's Office",12:"Infirmary",13:"Library",14:"Treasury",15:"Battlements",16:"Lord's Solar",17:"Oubliette",18:"War Room",19:"Secret Passage",20:"Throne Room"},
+      station:  {1:"Maintenance Shaft",2:"Worker Dormitory",3:"Airlock",4:"Market Hub",5:"Cantina",6:"Docking Bay",7:"Security Post",8:"Detention Block",9:"Engineering Core",10:"Medical Wing",11:"Research Lab",12:"Communications Hub",13:"Observation Deck",14:"Data Centre",15:"Weapons Platform",16:"Command Centre",17:"Reactor Core",18:"Quarantine Zone",19:"Abandoned Section",20:"Administrator's Sanctum"},
+      cave:     {1:"Narrow Fissure",2:"Sinkhole",3:"Passage",4:"Underground Stream",5:"Mushroom Grove",6:"Nesting Chamber",7:"Rockfall",8:"Thermal Vent",9:"Crystal Chamber",10:"Underground Lake",11:"Bone Pit",12:"Ancient Carving",13:"Collapsed Shrine",14:"Fungal Forest",15:"Lava Tube",16:"Hidden Pool",17:"Vast Cavern",18:"Glowing Grotto",19:"Primordial Chamber",20:"Abyss"},
+      sewer:    {1:"Drain",2:"Overflow Tunnel",3:"Junction",4:"Makeshift Camp",5:"Black Market Den",6:"Shrine",7:"Watchpost",8:"Holding Pit",9:"Workshop",10:"Flooded Chamber",11:"Gang Territory",12:"Corpse Dump",13:"Hidden Archive",14:"Fungal Garden",15:"Fortified Hideout",16:"Crime Boss Lair",17:"Ritual Site",18:"Underground Port",19:"Forgotten District",20:"Shadow Court"},
+      mega:     {1:"Maintenance Shaft",2:"Hab Block",3:"Transit Corridor",4:"Street Market",5:"Bar",6:"Chapel",7:"Security Checkpoint",8:"Holding Cell",9:"Fabrication Floor",10:"Server Room",11:"Corporate Office",12:"Med Clinic",13:"Data Vault",14:"Body Farm",15:"Private Level",16:"Executive Floor",17:"Fight Pit",18:"Landing Platform",19:"Decommissioned Level",20:"Control Spire"}
+    }
+  }
+};
+
+let currentGenre = 'general';
+let currentScale = 'exterior';
+let isRolling = false;
+
+function setTable(scale, genre, btn) {
+  currentScale = scale;
+  currentGenre = genre;
+  document.querySelectorAll('.sel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function rollDie(faces) { return Math.floor(Math.random() * faces) + 1; }
+
+function getD20Result(roll) {
+  if (currentScale === 'exterior') {
+    return TABLES.d20.exterior[currentGenre][roll];
+  } else {
+    return TABLES.d20.interior[currentScale][roll];
+  }
+}
+
+async function rollAll() {
+  if (isRolling) return;
+  isRolling = true;
+  const btn = document.getElementById('rollBtn');
+  btn.disabled = true;
+  btn.textContent = 'ATTUNING';
+  document.getElementById('resultPanel').classList.remove('visible');
+
+  const rolls = { d4: rollDie(4), d6: rollDie(6), d8: rollDie(8), d12: rollDie(12), d20: rollDie(20) };
+  const dice = ['d4','d6','d8','d12','d20'];
+
+  dice.forEach(d => {
+    document.getElementById(`card-${d}`).classList.remove('revealed');
+    document.getElementById(`card-${d}`).classList.add('rolling');
+    document.getElementById(`num-${d}`).textContent = '?';
+    document.getElementById(`res-${d}`).textContent = '...';
+  });
+
+  for (let i = 0; i < dice.length; i++) {
+    await new Promise(r => setTimeout(r, 1000));
+    const d = dice[i];
+    document.getElementById(`card-${d}`).classList.remove('rolling');
+    document.getElementById(`card-${d}`).classList.add('revealed');
+    document.getElementById(`num-${d}`).textContent = rolls[d];
+    if (d === 'd4')  document.getElementById(`res-${d}`).textContent = TABLES.d4[rolls.d4].name;
+    if (d === 'd6')  document.getElementById(`res-${d}`).textContent = TABLES.d6[rolls.d6];
+    if (d === 'd8')  document.getElementById(`res-${d}`).textContent = TABLES.d8[rolls.d8];
+    if (d === 'd12') document.getElementById(`res-${d}`).textContent = TABLES.d12[rolls.d12];
+    if (d === 'd20') document.getElementById(`res-${d}`).textContent = getD20Result(rolls.d20);
+  }
+
+  await new Promise(r => setTimeout(r, 600));
+  renderResult(rolls);
+
+  isRolling = false;
+  btn.disabled = false;
+  btn.textContent = 'ATTUNE';
+}
+
+function renderResult(rolls) {
+  const element    = TABLES.d4[rolls.d4].name;
+  const quality    = TABLES.d4[rolls.d4].quality;
+  const size       = TABLES.d6[rolls.d6];
+  const ambiance   = TABLES.d8[rolls.d8];
+  const inhabitants= TABLES.d12[rolls.d12];
+  const func       = getD20Result(rolls.d20);
+
+  const colours = { d4:'#dc3232', d6:'#3cb450', d8:'#dcbe28', d12:'#963cd2', d20:'#3282dc' };
+  const rows = [
+    { die:'d4',  label:'Element',     value: element,     sub: quality },
+    { die:'d6',  label:'Size',        value: size,        sub: '' },
+    { die:'d8',  label:'Ambiance',    value: ambiance,    sub: '' },
+    { die:'d12', label:'Inhabitants', value: inhabitants, sub: '' },
+    { die:'d20', label:'Function',    value: func,        sub: '' },
+  ];
+
+  const breakdown = rows.map(r => `
+    <div class="result-row">
+      <div class="result-row-header">
+        <span class="result-die-pip" style="color:${colours[r.die]};border-color:${colours[r.die]}">${r.die.toUpperCase()}</span>
+        <span class="result-label">${r.label}</span>
+        <span class="result-value" style="color:${colours[r.die]}">${r.value}</span>
+        ${r.sub ? `<span style="color:var(--text-dim);font-size:11px;font-style:italic">${r.sub}</span>` : ''}
+      </div>
+    </div>`).join('');
+
+  const panel = document.getElementById('resultPanel');
+  document.getElementById('resultContent').innerHTML = `
+    <div class="location-name">${func}</div>
+    <div class="divider" style="margin:28px 0"><span style="color:var(--gold-dim);font-size:14px">⬡</span></div>
+    <div class="results-breakdown">${breakdown}</div>`;
+
+  panel.classList.add('visible');
+}
+</script>
+</body>
+</html>

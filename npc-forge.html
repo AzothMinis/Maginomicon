@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NPC Forge</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a6030;
+    --deep: #080608;
+    --panel: #0e0b10;
+    --border: rgba(201,168,76,0.25);
+    --text: #d4c5a0;
+    --text-dim: #7a6e58;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'EB Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(201,168,76,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 70%, rgba(201,168,76,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(201,168,76,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.15) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, rgba(201,168,76,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 50%, rgba(201,168,76,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(4,2,6,0.85) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+  header { text-align: center; padding: 20px 0 40px; }
+  .title-ornament {
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 16px;
+      }
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: var(--gold-light);
+    text-shadow: 0 0 40px rgba(201,168,76,0.4), 0 0 80px rgba(201,168,76,0.15);
+    letter-spacing: 4px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 10px 0 32px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim));
+  }
+  .divider::after { background: linear-gradient(to left, transparent, var(--gold-dim)); }
+  .divider span { color: var(--gold); font-size: 18px; }
+
+  .genre-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 36px;
+  }
+  .genre-btn {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .genre-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .genre-btn.active {
+    border-color: var(--gold);
+    color: var(--gold-light);
+    background: rgba(201,168,76,0.08);
+    box-shadow: 0 0 12px rgba(201,168,76,0.1);
+  }
+
+  .dice-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 700px) { .dice-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .die-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 10px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+  }
+  .die-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .die-card.revealed {
+    border-color: rgba(201,168,76,0.6);
+    box-shadow: 0 0 20px rgba(201,168,76,0.1);
+  }
+  .die-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .die-svg-wrap { width: 70px; height: 70px; margin: 0 auto 14px; }
+  .die-svg-wrap svg { width: 100%; height: 100%; transition: filter 0.3s; }
+  .die-card.rolling .die-svg-wrap svg { animation: spinDie 0.06s linear infinite; }
+  .die-card.revealed .die-svg-wrap svg { animation: none; }
+  @keyframes spinDie {
+    0%   { transform: rotate(0deg) scale(1); }
+    25%  { transform: rotate(90deg) scale(1.05); }
+    50%  { transform: rotate(180deg) scale(1); }
+    75%  { transform: rotate(270deg) scale(1.05); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  .die-category {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+      }
+  .die-roll-number {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    min-height: 28px;
+  }
+  .die-result-name {
+    font-size: 15px;
+    color: var(--text);
+    font-style: italic;
+    line-height: 1.4;
+    min-height: 32px;
+    transition: color 0.4s;
+  }
+  .die-card.revealed .die-result-name { color: var(--text); }
+
+  #card-d4 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(220,50,50,0.5)); }
+  #card-d4 .die-roll-number { color: #dc3232; }
+  #card-d4.revealed { border-color: rgba(220,50,50,0.5); box-shadow: 0 0 20px rgba(220,50,50,0.12); }
+
+  #card-d6 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(60,180,80,0.5)); }
+  #card-d6 .die-roll-number { color: #3cb450; }
+  #card-d6.revealed { border-color: rgba(60,180,80,0.5); box-shadow: 0 0 20px rgba(60,180,80,0.12); }
+
+  #card-d8 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(220,190,40,0.5)); }
+  #card-d8 .die-roll-number { color: #dcbe28; }
+  #card-d8.revealed { border-color: rgba(220,190,40,0.5); box-shadow: 0 0 20px rgba(220,190,40,0.12); }
+
+  #card-d12 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(150,60,210,0.5)); }
+  #card-d12 .die-roll-number { color: #963cd2; }
+  #card-d12.revealed { border-color: rgba(150,60,210,0.5); box-shadow: 0 0 20px rgba(150,60,210,0.12); }
+
+  #card-d20 .die-svg-wrap svg { filter: drop-shadow(0 0 8px rgba(50,130,220,0.5)); }
+  #card-d20 .die-roll-number { color: #3282dc; }
+  #card-d20.revealed { border-color: rgba(50,130,220,0.5); box-shadow: 0 0 20px rgba(50,130,220,0.12); }
+
+  .roll-section { text-align: center; margin-bottom: 40px; }
+  .roll-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 16px 48px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .roll-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(201,168,76,0.08) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  .roll-btn:hover::before { transform: translateX(100%); }
+  .roll-btn:hover { background: rgba(201,168,76,0.06); box-shadow: 0 0 30px rgba(201,168,76,0.15); }
+  .roll-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .npc-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s, transform 0.8s;
+  }
+  .npc-panel.visible { opacity: 1; transform: translateY(0); }
+  .npc-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+  }
+  .corner-ornament {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--gold-dim);
+    border-style: solid;
+    opacity: 0.5;
+  }
+  .corner-ornament.tl { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+  .corner-ornament.tr { top: 8px; right: 8px; border-width: 1px 1px 0 0; }
+  .corner-ornament.bl { bottom: 8px; left: 8px; border-width: 0 0 1px 1px; }
+  .corner-ornament.br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+  .npc-panel-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 5px;
+    color: var(--gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .npc-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    color: var(--gold-light);
+    text-align: center;
+    margin-bottom: 6px;
+    text-shadow: 0 0 20px rgba(201,168,76,0.3);
+  }
+  .npc-hp {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .npc-tagline {
+    font-style: italic;
+    color: var(--text-dim);
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 32px;
+  }
+  .npc-summary {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text);
+    border-left: 2px solid var(--gold-dim);
+    padding-left: 24px;
+    margin-bottom: 32px;
+  }
+  .npc-hook {
+    color: var(--gold-dim);
+    font-style: italic;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    margin-top: 4px;
+  }
+  .results-breakdown { display: flex; flex-direction: column; gap: 14px; }
+  .result-row { border-left: 2px solid rgba(201,168,76,0.15); padding-left: 20px; }
+  .result-row-header { display: flex; align-items: center; gap: 12px; }
+  .result-die-pip {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 1px;
+    border: 1px solid;
+    padding: 2px 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .result-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .result-value {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .loading-text {
+    text-align: center;
+    color: var(--text-dim);
+    font-style: italic;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="title-ornament">✦ &nbsp; Maginomicon &nbsp; ✦</div>
+    <h1>NPC Forge</h1>
+    <p class="subtitle">Roll the Dice. Bind a Soul.</p>
+  </header>
+
+  <div class="divider"><span>⬡</span></div>
+
+  <div class="genre-selector">
+    <button class="genre-btn active" onclick="setGenre('general', this)">General</button>
+    <button class="genre-btn" onclick="setGenre('fantasy', this)">Fantasy</button>
+    <button class="genre-btn" onclick="setGenre('scifi', this)">Sci-Fi</button>
+    <button class="genre-btn" onclick="setGenre('horror', this)">Horror</button>
+    <button class="genre-btn" onclick="setGenre('postapoc', this)">Post-Apocalyptic</button>
+    <button class="genre-btn" onclick="setGenre('cyberpunk', this)">Cyberpunk</button>
+    <button class="genre-btn" onclick="setGenre('pulp', this)">Historical</button>
+  </div>
+
+  <div class="dice-grid">
+    <!-- D4 -->
+    <div class="die-card" id="card-d4">
+      <div class="die-label">D4</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,8 92,85 8,85" fill="none" stroke="#dc3232" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="50" y1="8" x2="50" y2="85" stroke="#dc3232" stroke-width="0.8" opacity="0.3"/>
+          <line x1="8" y1="85" x2="71" y2="46" stroke="#dc3232" stroke-width="0.8" opacity="0.3"/>
+          <line x1="92" y1="85" x2="29" y2="46" stroke="#dc3232" stroke-width="0.8" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="die-category">Element</div>
+      <div class="die-roll-number" id="num-d4">—</div>
+      <div class="die-result-name" id="res-d4">Nature</div>
+    </div>
+    <!-- D6 -->
+    <div class="die-card" id="card-d6">
+      <div class="die-label">D6</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="15" y="15" width="70" height="70" fill="none" stroke="#3cb450" stroke-width="2"/>
+          <line x1="15" y1="15" x2="30" y2="5" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="85" y1="15" x2="95" y2="5" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="95" y1="5" x2="30" y2="5" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="85" y1="85" x2="95" y2="75" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="95" y1="5" x2="95" y2="75" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+          <line x1="30" y1="5" x2="30" y2="15" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="die-category">Presence</div>
+      <div class="die-roll-number" id="num-d6">—</div>
+      <div class="die-result-name" id="res-d6">Physical</div>
+    </div>
+    <!-- D8 -->
+    <div class="die-card" id="card-d8">
+      <div class="die-label">D8</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="50,10 88,50 50,90 12,50" fill="none" stroke="#dcbe28" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="50" y1="10" x2="50" y2="90" stroke="#dcbe28" stroke-width="0.8" opacity="0.3"/>
+          <line x1="12" y1="50" x2="88" y2="50" stroke="#dcbe28" stroke-width="0.8" opacity="0.3"/>
+          <line x1="50" y1="10" x2="88" y2="50" stroke="#dcbe28" stroke-width="0.8" opacity="0.25"/>
+          <line x1="50" y1="10" x2="12" y2="50" stroke="#dcbe28" stroke-width="0.8" opacity="0.25"/>
+        </svg>
+      </div>
+      <div class="die-category">Demeanour</div>
+      <div class="die-roll-number" id="num-d8">—</div>
+      <div class="die-result-name" id="res-d8">Attitude</div>
+    </div>
+    <!-- D12 -->
+    <div class="die-card" id="card-d12">
+      <div class="die-label">D12</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- outer pentagon -->
+          <polygon points="50,8 92,38 76,88 24,88 8,38" fill="none" stroke="#963cd2" stroke-width="1.5" opacity="0.55"/>
+          <!-- inner pentagon rotated 36deg -->
+          <polygon points="50,30 68,43 62,65 38,65 32,43" fill="none" stroke="#963cd2" stroke-width="2"/>
+          <!-- spokes connecting inner vertices to outer vertices -->
+          <line x1="50" y1="30" x2="50" y2="8" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="68" y1="43" x2="92" y2="38" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="62" y1="65" x2="76" y2="88" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="38" y1="65" x2="24" y2="88" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+          <line x1="32" y1="43" x2="8" y2="38" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="die-category">Motivation</div>
+      <div class="die-roll-number" id="num-d12">—</div>
+      <div class="die-result-name" id="res-d12">Drive</div>
+    </div>
+    <!-- D20 -->
+    <div class="die-card" id="card-d20">
+      <div class="die-label">D20</div>
+      <div class="die-svg-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="40.3,60.6 40.3,11.5 80.1,37.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.30"/>
+          <polygon points="40.3,60.6 80.1,37.6 72.3,87.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.33"/>
+          <polygon points="40.3,60.6 8.0,45.1 40.3,11.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.36"/>
+          <polygon points="40.3,60.6 72.3,87.4 27.7,92.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.41"/>
+          <polygon points="40.3,60.6 27.7,92.0 8.0,45.1" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.43"/>
+          <polygon points="72.3,8.0 80.1,37.6 40.3,11.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.48"/>
+          <polygon points="92.0,54.9 72.3,87.4 80.1,37.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.52"/>
+          <polygon points="27.7,12.6 40.3,11.5 8.0,45.1" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.58"/>
+          <polygon points="92.0,54.9 80.1,37.6 72.3,8.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.61"/>
+          <polygon points="72.3,8.0 40.3,11.5 27.7,12.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.65"/>
+          <polygon points="59.7,88.5 27.7,92.0 72.3,87.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.65"/>
+          <polygon points="19.9,62.4 8.0,45.1 27.7,92.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.69"/>
+          <polygon points="59.7,88.5 72.3,87.4 92.0,54.9" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.72"/>
+          <polygon points="27.7,12.6 8.0,45.1 19.9,62.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.78"/>
+          <polygon points="19.9,62.4 27.7,92.0 59.7,88.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.82"/>
+          <polygon points="59.7,39.4 92.0,54.9 72.3,8.0" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.87"/>
+          <polygon points="59.7,39.4 72.3,8.0 27.7,12.6" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.89"/>
+          <polygon points="59.7,39.4 59.7,88.5 92.0,54.9" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.94"/>
+          <polygon points="59.7,39.4 27.7,12.6 19.9,62.4" fill="none" stroke="#3282dc" stroke-width="1" opacity="0.97"/>
+          <polygon points="59.7,39.4 19.9,62.4 59.7,88.5" fill="none" stroke="#3282dc" stroke-width="1" opacity="1.00"/>
+        </svg>
+      </div>
+      <div class="die-category">Archetype</div>
+      <div class="die-roll-number" id="num-d20">—</div>
+      <div class="die-result-name" id="res-d20">Who They Are</div>
+    </div>
+  </div>
+
+  <div class="roll-section">
+    <button class="roll-btn" id="rollBtn" onclick="rollAll()">ATTUNE</button>
+  </div>
+
+  <div class="npc-panel" id="npcPanel">
+    <div class="corner-ornament tl"></div>
+    <div class="corner-ornament tr"></div>
+    <div class="corner-ornament bl"></div>
+    <div class="corner-ornament br"></div>
+    <div class="npc-panel-title">⬡ &nbsp; NPC Profile &nbsp; ⬡</div>
+    <div id="npcContent"><div class="loading-text">The oracle stirs...</div></div>
+  </div>
+</div>
+
+<script>
+const TABLES = {
+  d4: {
+    1: { name: "Fire",  quality: "Hot & Dry"  },
+    2: { name: "Water", quality: "Cold & Wet" },
+    3: { name: "Air",   quality: "Hot & Wet"  },
+    4: { name: "Earth", quality: "Cold & Dry" }
+  },
+  d6: {
+    1: "Frail", 2: "Slight", 3: "Average",
+    4: "Athletic", 5: "Powerful", 6: "Herculean"
+  },
+  d8: {
+    1: "Evasive", 2: "Cunning", 3: "Charming", 4: "Aloof",
+    5: "Aggressive", 6: "Welcoming", 7: "Melancholic", 8: "Suspicious"
+  },
+  d12: {
+    1: "Revenge", 2: "Security", 3: "Survival", 4: "Belonging",
+    5: "Glory", 6: "Redemption", 7: "Justice", 8: "Addiction",
+    9: "Freedom", 10: "Mastery", 11: "Honour", 12: "Faith"
+  },
+  d20: {
+    general:  { 1:"Wanderer",2:"Charlatan",3:"Oracle",4:"Noble",5:"Ruler",6:"Priest",7:"Artist",8:"Commander",9:"Soldier of Fortune",10:"Scholar",11:"Gambler",12:"Magistrate",13:"Outlaw",14:"Assassin",15:"Physician",16:"Crime Lord",17:"Activist",18:"Occultist",19:"Inquisitor",20:"Warlord" },
+    fantasy:  { 1:"Wanderer",2:"Alchemist",3:"Hedge Witch",4:"Noble",5:"Warlord",6:"High Priest",7:"Bard",8:"Knight",9:"Sellsword",10:"Monk",11:"Shapeshifter",12:"Guard",13:"Rogue",14:"Gravedigger",15:"Druid",16:"Diabolist",17:"Necromancer",18:"Paladin",19:"Battle-Mage",20:"Ranger" },
+    scifi:    { 1:"Traveller",2:"Slicer",3:"Psion",4:"Executive",5:"Officer",6:"Politician",7:"Pilot",8:"Marine",9:"Gun-For-Hire",10:"Engineer",11:"Smuggler",12:"Security",13:"Android",14:"Medic",15:"Crime Lord",16:"Scum",17:"Scientist",18:"Labourer",19:"Rebel",20:"Trader" },
+    horror:   { 1:"Innocent",2:"Occultist",3:"Cultist",4:"Countess",5:"Lord",6:"Priest",7:"Thrall",8:"Hunter",9:"Survivor",10:"Gravedigger",11:"Shapeshifter",12:"Detective",13:"Possessed",14:"Vampire",15:"Necromancer",16:"Mad Scientist",17:"Mystic",18:"Hysteric",19:"Demon",20:"Spectre" },
+    postapoc: { 1:"Vagrant",2:"Junker",3:"Cultist",4:"Elder",5:"Warlord",6:"Preacher",7:"Survivor",8:"Raider",9:"Mercenary",10:"Scavenger",11:"Trader",12:"Militia",13:"Mutant",14:"Slaver",15:"Medic",16:"Cannibal",17:"Scout",18:"Feral",19:"Bounty Hunter",20:"Irradiated" },
+    cyberpunk:{ 1:"Street Kid",2:"Netrunner",3:"Informant",4:"Gang Leader",5:"Kingpin",6:"Fixer",7:"Journalist",8:"Mercenary",9:"Cyberpsycho",10:"Nomad",11:"Stim Dealer",12:"Cop",13:"Ghost",14:"Assassin",15:"Medtech",16:"Smuggler",17:"Chromer",18:"Ripperdoc",19:"Corporate Muscle",20:"Corporate Executive" },
+    pulp:     { 1:"Serf",2:"Smith",3:"Occultist",4:"Noblewoman",5:"Lord",6:"Bishop",7:"Courtesan/Spy",8:"Rogue/Thief",9:"Soldier",10:"Polymath",11:"Merchant",12:"Inquisitor",13:"Executioner",14:"Pirate",15:"Physician",16:"Rake",17:"Revolutionary",18:"Explorer",19:"Smuggler",20:"Mercenary" }
+  }
+};
+
+let currentGenre = 'general';
+let isRolling = false;
+
+function setGenre(genre, btn) {
+  currentGenre = genre;
+  document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function rollDie(faces) { return Math.floor(Math.random() * faces) + 1; }
+
+async function rollAll() {
+  if (isRolling) return;
+  isRolling = true;
+  const btn = document.getElementById('rollBtn');
+  btn.disabled = true;
+  btn.textContent = 'ATTUNING';
+  document.getElementById('npcPanel').classList.remove('visible');
+
+  const rolls = { d4: rollDie(4), d6: rollDie(6), d8: rollDie(8), d12: rollDie(12), d20: rollDie(20) };
+  const dice = ['d4','d6','d8','d12','d20'];
+
+  // All dice start spinning immediately
+  dice.forEach(d => {
+    document.getElementById(`card-${d}`).classList.remove('revealed');
+    document.getElementById(`card-${d}`).classList.add('rolling');
+    document.getElementById(`num-${d}`).textContent = '?';
+    document.getElementById(`res-${d}`).textContent = '...';
+  });
+
+  // Each die reveals 1 second after the previous
+  for (let i = 0; i < dice.length; i++) {
+    await new Promise(r => setTimeout(r, 1000));
+    const d = dice[i];
+    document.getElementById(`card-${d}`).classList.remove('rolling');
+    document.getElementById(`card-${d}`).classList.add('revealed');
+    document.getElementById(`num-${d}`).textContent = rolls[d];
+    if (d === 'd4')  document.getElementById(`res-${d}`).textContent = TABLES.d4[rolls.d4].name;
+    if (d === 'd6')  document.getElementById(`res-${d}`).textContent = TABLES.d6[rolls.d6];
+    if (d === 'd8')  document.getElementById(`res-${d}`).textContent = TABLES.d8[rolls.d8];
+    if (d === 'd12') document.getElementById(`res-${d}`).textContent = TABLES.d12[rolls.d12];
+    if (d === 'd20') document.getElementById(`res-${d}`).textContent = TABLES.d20[currentGenre][rolls.d20];
+  }
+
+  await new Promise(r => setTimeout(r, 600));
+  const panel = document.getElementById('npcPanel');
+  panel.classList.add('visible');
+  document.getElementById('npcContent').innerHTML = '<div class="loading-text">The oracle conjures your NPC...</div>';
+
+  await generateNPC(rolls);
+  isRolling = false;
+  btn.disabled = false;
+  btn.textContent = 'ATTUNE';
+}
+
+async function generateNPC(rolls) {
+  const element    = TABLES.d4[rolls.d4].name;
+  const quality    = TABLES.d4[rolls.d4].quality;
+  const presence   = TABLES.d6[rolls.d6];
+  const demeanour  = TABLES.d8[rolls.d8];
+  const motivation = TABLES.d12[rolls.d12];
+  const archetype  = TABLES.d20[currentGenre][rolls.d20];
+  const hp         = rolls.d20;
+  const genreLabel = { general:'General', fantasy:'Fantasy', scifi:'Sci-Fi', horror:'Horror', postapoc:'Post-Apocalyptic', cyberpunk:'Cyberpunk', pulp:'Historical' }[currentGenre];
+
+  const prompt = `You are an NPC generator for tabletop RPGs. Generate a vivid, immediately playable NPC.
+
+Dice results:
+- Element (D4): ${element} — ${quality}
+- Physical Presence (D6): ${presence}
+- Demeanour (D8): ${demeanour}
+- Motivation (D12): ${motivation}
+- Archetype (D20): ${archetype}
+- Genre: ${genreLabel}
+
+Rules:
+- Demeanour is the mask. Motivation is what's underneath. Let there be tension between the two.
+- Elemental nature flavours personality — it is not literal.
+- Give them a name appropriate to the genre.
+- Be specific about the person — how they look, how they move, their manner and bearing.
+- DO NOT invent place names, organisations, factions, or world lore.
+- DO NOT write what they want from the party or what they are currently doing or planning.
+- Vary physical descriptions entirely — avoid repeated tropes in hair, clothing, build, or mannerisms.
+
+Respond ONLY with JSON (no markdown, no backticks):
+{
+  "name": "Their name",
+  "tagline": "One sentence — who they are in this world, under 12 words",
+  "summary": "3-4 sentences. Appearance and personality ONLY. How they look, how they carry themselves, what their manner conveys. Nothing about what they want, are doing, or are planning."
+}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 800,
+        temperature: 1,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(i => i.text || '').join('');
+    const npc = JSON.parse(text.replace(/```json|```/g, '').trim());
+    renderNPC(npc, rolls, element, quality, presence, demeanour, motivation, archetype, hp);
+  } catch(e) {
+    renderFallback(rolls, element, quality, presence, demeanour, motivation, archetype, hp);
+  }
+}
+
+function renderNPC(npc, rolls, element, quality, presence, demeanour, motivation, archetype, hp) {
+  const colours = { d4:'#dc3232', d6:'#3cb450', d8:'#dcbe28', d12:'#963cd2', d20:'#3282dc' };
+  const rows = [
+    { die:'d4',  label:'Element',    value:`${element}`,   sub: quality },
+    { die:'d6',  label:'Presence',   value: presence,      sub: '' },
+    { die:'d8',  label:'Demeanour',  value: demeanour,     sub: '' },
+    { die:'d12', label:'Motivation', value: motivation,    sub: '' },
+    { die:'d20', label:'Archetype',  value: archetype,     sub: '' },
+  ];
+
+  const breakdown = rows.map(r => `
+    <div class="result-row">
+      <div class="result-row-header">
+        <span class="result-die-pip" style="color:${colours[r.die]};border-color:${colours[r.die]}">${r.die.toUpperCase()}</span>
+        <span class="result-label">${r.label}</span>
+        <span class="result-value" style="color:${colours[r.die]}">${r.value}</span>
+        ${r.sub ? `<span style="color:var(--text-dim);font-size:11px;font-style:italic">${r.sub}</span>` : ''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('npcContent').innerHTML = `
+    <div class="npc-name">${npc.name}</div>
+    <div class="npc-tagline">${npc.tagline}</div>
+    <div class="divider" style="margin:28px 0"><span style="color:var(--gold-dim);font-size:14px">⬡</span></div>
+    <div class="results-breakdown">${breakdown}</div>
+    <div class="divider" style="margin:28px 0"><span style="color:var(--gold-dim);font-size:14px">⬡</span></div>
+    <div class="npc-summary"><p>${npc.summary}</p></div>`;
+}
+
+function renderFallback(rolls, element, quality, presence, demeanour, motivation, archetype, hp) {
+  const colours = { d4:'#dc3232', d6:'#3cb450', d8:'#dcbe28', d12:'#963cd2', d20:'#3282dc' };
+  const rows = [
+    { die:'d4', label:'Element', value:element, sub:quality },
+    { die:'d6', label:'Presence', value:presence, sub:'' },
+    { die:'d8', label:'Demeanour', value:demeanour, sub:'' },
+    { die:'d12', label:'Motivation', value:motivation, sub:'' },
+    { die:'d20', label:'Archetype', value:archetype, sub:'' },
+  ];
+  const breakdown = rows.map(r => `
+    <div class="result-row">
+      <div class="result-row-header">
+        <span class="result-die-pip" style="color:${colours[r.die]};border-color:${colours[r.die]}">${r.die.toUpperCase()}</span>
+        <span class="result-label">${r.label}</span>
+        <span class="result-value" style="color:${colours[r.die]}">${r.value}</span>
+        ${r.sub ? `<span style="color:var(--text-dim);font-size:11px;font-style:italic">${r.sub}</span>` : ''}
+      </div>
+    </div>`).join('');
+  const elementAdj = { Fire:'Fiery', Earth:'Earthy', Water:'Watery', Air:'Airy' };
+  const elemAdj = (elementAdj[element] || element).toLowerCase();
+  const article = /^[aeiou]/i.test(elemAdj) ? 'an' : 'a';
+  document.getElementById('npcContent').innerHTML = `
+    <div class="npc-name">${archetype}</div>
+    <div class="npc-tagline">${presence} · ${element} · ${demeanour}</div>
+    <div class="npc-summary">
+      <p>${presence} ${archetype.toLowerCase()} with ${article} ${elemAdj} nature. ${demeanour} on the surface, driven underneath by ${motivation.toLowerCase()}.</p>
+    </div>
+    <div class="divider" style="margin:28px 0"><span style="color:var(--gold-dim);font-size:14px">⬡</span></div>
+    <div class="results-breakdown">${breakdown}</div>`;
+}
+</script>
+</body>
+</html>
