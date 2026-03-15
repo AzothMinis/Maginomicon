@@ -11,8 +11,8 @@
     --gold-light: #e8c97a;
     --gold-dim: #7a6030;
     --ember: #e84c1e;
-    --deep: #080608;
-    --panel: #0e0b10;
+    --deep: #080c18;
+    --panel: #0e1428;
     --border: rgba(201,168,76,0.25);
     --text: #d4c5a0;
     --text-dim: #7a6e58;
@@ -34,30 +34,13 @@
     content: '';
     position: fixed;
     inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 10% 20%, rgba(201,168,76,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 30% 70%, rgba(201,168,76,0.3) 0%, transparent 100%),
-      radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 70% 80%, rgba(201,168,76,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 20% 90%, rgba(201,168,76,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.25) 0%, transparent 100%),
-      radial-gradient(1px 1px at 90% 50%, rgba(201,168,76,0.3) 0%, transparent 100%),
-      radial-gradient(2px 2px at 45% 60%, rgba(201,168,76,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 75% 35%, rgba(255,255,255,0.2) 0%, transparent 100%);
+    background: radial-gradient(ellipse 55% 70% at 50% 45%, #111830 0%, #080c18 100%);
     pointer-events: none;
     z-index: 0;
   }
 
   /* Vignette */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 40%, rgba(4,2,6,0.85) 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
+
 
   .container {
     position: relative;
