@@ -22,9 +22,7 @@
     --text-dim: #7a6e58;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   html { scroll-behavior: smooth; }
-
   body {
     background: var(--deep);
     color: var(--text);
@@ -43,7 +41,6 @@
     padding-bottom: 80px;
     overflow: hidden;
   }
-
   .hero-bg {
     position: absolute;
     inset: 0;
@@ -54,23 +51,18 @@
     position: fixed;
     z-index: 0;
   }
-
-  
-
   .hero-vignette {
     position: absolute;
     inset: 0;
     background: radial-gradient(ellipse at center, transparent 20%, rgba(5,3,10,0.7) 80%),
                 linear-gradient(to bottom, rgba(5,3,10,0.3) 0%, transparent 30%, transparent 50%, rgba(5,3,10,0.95) 100%);
   }
-
   .hero-content {
     position: relative;
     z-index: 2;
     text-align: center;
     padding: 0 20px;
   }
-
   .hero-ornament {
     font-family: 'Cinzel', serif;
     font-size: 10px;
@@ -81,22 +73,17 @@
     opacity: 0;
     animation: fadeUp 1.2s ease forwards 0.3s;
   }
-
   h1.site-title {
     font-family: 'Cinzel Decorative', serif;
     font-size: clamp(3rem, 10vw, 7rem);
     color: var(--gold-light);
-    text-shadow:
-      0 0 60px rgba(201,168,76,0.6),
-      0 0 120px rgba(201,168,76,0.2),
-      0 2px 4px rgba(0,0,0,0.8);
+    text-shadow: 0 0 60px rgba(201,168,76,0.6), 0 0 120px rgba(201,168,76,0.2), 0 2px 4px rgba(0,0,0,0.8);
     letter-spacing: 6px;
     line-height: 1;
     opacity: 0;
     animation: fadeUp 1.4s ease forwards 0.6s;
     margin-bottom: 32px;
   }
-
   .hero-pitch {
     font-family: 'IM Fell English', serif;
     font-size: clamp(1rem, 2.2vw, 1.25rem);
@@ -127,7 +114,6 @@
     opacity: 0;
     animation: fadeUp 1.4s ease forwards 1s;
   }
-
   .hero-quote em {
     display: block;
     margin-top: 20px;
@@ -138,34 +124,6 @@
     color: var(--gold);
   }
 
-  .scroll-cue {
-    opacity: 0;
-    animation: fadeUp 1s ease forwards 2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-  .scroll-cue span {
-    font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 5px;
-    color: var(--gold-dim);
-    text-transform: uppercase;
-  }
-  .scroll-cue svg {
-    width: 20px;
-    height: 20px;
-    stroke: var(--gold-dim);
-    fill: none;
-    animation: bounce 2s ease infinite;
-  }
-  @keyframes bounce {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(6px); }
-  }
-
   /* ── FORGE GRID ── */
   .forge-section {
     position: relative;
@@ -173,32 +131,17 @@
     max-width: 1100px;
     margin: 0 auto;
   }
-
-  .section-heading {
-    text-align: center;
-    margin-bottom: 64px;
-  }
-  .section-heading h2 {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
-    color: var(--gold);
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-  .section-heading p {
-    font-size: 1.1rem;
-    color: var(--text-dim);
-    font-style: italic;
-    max-width: 500px;
-    margin: 0 auto;
-    line-height: 1.7;
-  }
+  .section-heading { text-align: center; margin-bottom: 64px; }
 
   .forge-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  @media (max-width: 700px) {
+    .forge-grid { grid-template-columns: 1fr; }
   }
 
   .forge-card {
@@ -212,8 +155,10 @@
     overflow: hidden;
     transition: border-color 0.4s, transform 0.4s, box-shadow 0.4s;
     display: block;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease, border-color 0.4s, box-shadow 0.4s;
   }
-
   .forge-card::before {
     content: '';
     position: absolute;
@@ -222,7 +167,6 @@
     opacity: 0;
     transition: opacity 0.4s;
   }
-
   .forge-card::after {
     content: '';
     position: absolute;
@@ -232,30 +176,15 @@
     opacity: 0;
     transition: opacity 0.4s;
   }
-
   .forge-card:hover {
     border-color: rgba(201,168,76,0.5);
-    transform: translateY(-4px);
+    transform: translateY(-4px) !important;
     box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(201,168,76,0.08);
   }
+  .forge-card:hover::before, .forge-card:hover::after { opacity: 1; }
+  .forge-card.visible { opacity: 1; transform: translateY(0); }
 
-  .forge-card:hover::before,
-  .forge-card:hover::after { opacity: 1; }
-
-  .forge-card.coming-soon {
-    opacity: 0.45;
-    cursor: default;
-    pointer-events: none;
-  }
-
-  .card-die {
-    width: 48px;
-    height: 48px;
-    margin: 0 auto 24px;
-    opacity: 0.8;
-    display: block;
-  }
-
+  .card-die { width: 48px; height: 48px; margin: 0 auto 24px; opacity: 0.8; display: block; }
   .card-title {
     font-family: 'Cinzel', serif;
     font-size: 1.15rem;
@@ -264,33 +193,37 @@
     text-transform: uppercase;
     margin-bottom: 12px;
   }
+  .card-desc { font-size: 0.95rem; color: var(--text-dim); line-height: 1.7; font-style: italic; }
 
-  .card-desc {
-    font-size: 0.95rem;
-    color: var(--text-dim);
-    line-height: 1.7;
-    font-style: italic;
-  }
-
-  .card-badge {
+  /* lock card */
+  .lock-card { cursor: pointer; }
+  .lock-overlay {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    inset: 0;
+    background: rgba(5,3,10,0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .lock-overlay svg { width: 32px; height: 32px; }
+  .lock-overlay span {
     font-family: 'Cinzel', serif;
-    font-size: 8px;
-    letter-spacing: 3px;
-    color: var(--gold-dim);
-    border: 1px solid var(--gold-dim);
-    padding: 4px 8px;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold);
     text-transform: uppercase;
   }
+  .lock-card:hover .lock-overlay { opacity: 1; }
 
   /* ── FOOTER ── */
   footer {
     border-top: 1px solid rgba(201,168,76,0.1);
     padding: 40px 20px;
     text-align: center;
-    background: transparent;
     position: relative;
     z-index: 2;
   }
@@ -308,67 +241,6 @@
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
-  /* Intersection observer fade-in for cards */
-  .forge-card {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.7s ease, transform 0.7s ease, border-color 0.4s, box-shadow 0.4s;
-  }
-  .forge-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .forge-card.coming-soon.visible {
-    opacity: 0.45;
-  }
-  .forge-card:hover {
-    transform: translateY(-4px) !important;
-  }
-
-  .member-card {
-    cursor: pointer;
-    position: relative;
-  }
-
-  .member-badge {
-    border-color: rgba(201,168,76,0.4) !important;
-    color: var(--gold) !important;
-  }
-
-  .lock-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(5,3,10,0.6);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .lock-overlay svg {
-    width: 32px;
-    height: 32px;
-  }
-
-  .lock-overlay span {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 4px;
-    color: var(--gold);
-    text-transform: uppercase;
-  }
-
-  .member-card:hover .lock-overlay {
-    opacity: 1;
-  }
-
-  .member-card.unlocked .lock-overlay {
-    display: none;
-  }
 </style>
 </head>
 <body>
@@ -380,7 +252,7 @@
   <div class="hero-content">
     <p class="hero-ornament">Maior J. Brooks Presents</p>
     <h1 class="site-title">Maginomicon</h1>
-    <p class="hero-pitch"><em>"The world you inhabit is only one frequency. Magi tune into them all."</em><br><span class="hero-pitch-attr">— Fruits of the Tree, Author Unknown</span></p>
+    <p class="hero-pitch"><em>&ldquo;The world you inhabit is only one frequency. Magi tune into them all.&rdquo;</em><br><span class="hero-pitch-attr">&mdash; Fruits of the Tree, Author Unknown</span></p>
     <blockquote class="hero-quote">
       Among the Magi, whispers tell of a book like no other &mdash; a living record of every deed, every dream, and every future yet unwritten.
       While the elders warn of blind faith in such tales, many still dedicate themselves
@@ -390,7 +262,7 @@
   </div>
 </section>
 
-<!-- FORGE GRID -->
+<!-- THREE CARDS -->
 <section class="forge-section">
 
   <div class="section-heading">
@@ -410,7 +282,7 @@
       <p class="card-desc">Support the Maginomicon. Become a patron. Gain access to forbidden knowledge.</p>
     </a>
 
-    <!-- FREE: Duelling Mat -->
+    <!-- DUELLING MAT -->
     <div class="forge-card" onclick="openMatLightbox()" style="cursor:pointer;">
       <svg class="card-die" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="8" y="6" width="36" height="44" rx="2" stroke="#c9a84c" stroke-width="1.5" fill="rgba(201,168,76,0.06)"/>
@@ -425,92 +297,19 @@
       <p class="card-desc">Download the Maginomicon: The Duel play mat.</p>
     </div>
 
-    <!-- FREE: World Forge -->
-    <a href="world-forge.html" class="forge-card">
+    <!-- RPG RESOURCES (locked) -->
+    <div class="forge-card lock-card" id="resources-card">
       <svg class="card-die" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="30,4 56,52 4,52" stroke="#3399CC" stroke-width="1.5" fill="rgba(51,153,204,0.06)"/>
-        <line x1="30" y1="4" x2="30" y2="52" stroke="#3399CC" stroke-width="0.8" opacity="0.5"/>
-        <line x1="4" y1="52" x2="43" y2="28" stroke="#3399CC" stroke-width="0.8" opacity="0.5"/>
-        <line x1="56" y1="52" x2="17" y2="28" stroke="#3399CC" stroke-width="0.8" opacity="0.5"/>
+        <polygon points="30,4 56,52 4,52" stroke="#c9a84c" stroke-width="1.5" fill="rgba(201,168,76,0.06)"/>
+        <line x1="30" y1="4" x2="30" y2="52" stroke="#c9a84c" stroke-width="0.8" opacity="0.4"/>
+        <line x1="4" y1="52" x2="43" y2="28" stroke="#c9a84c" stroke-width="0.8" opacity="0.4"/>
+        <line x1="56" y1="52" x2="17" y2="28" stroke="#c9a84c" stroke-width="0.8" opacity="0.4"/>
+        <circle cx="30" cy="36" r="6" stroke="#c9a84c" stroke-width="1.2" fill="rgba(201,168,76,0.08)"/>
+        <line x1="30" y1="33" x2="30" y2="37" stroke="#c9a84c" stroke-width="1.2"/>
+        <circle cx="30" cy="39" r="0.8" fill="#c9a84c"/>
       </svg>
-      <div class="card-title">World Forge</div>
-      <p class="card-desc">Attune to worlds unseen. Five elements. Infinite adventures.</p>
-    </a>
-
-    <!-- MEMBER ONLY: Location Forge -->
-    <div class="forge-card member-card" data-href="location-forge.html">
-      <div class="card-badge member-badge">Initiates Only</div>
-      <svg class="card-die" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="30,5 55,20 55,40 30,55 5,40 5,20" stroke="#44AA44" stroke-width="1.5" fill="rgba(68,170,68,0.06)"/>
-        <line x1="30" y1="5" x2="30" y2="55" stroke="#44AA44" stroke-width="0.8" opacity="0.4"/>
-        <line x1="5" y1="20" x2="55" y2="40" stroke="#44AA44" stroke-width="0.8" opacity="0.4"/>
-        <line x1="55" y1="20" x2="5" y2="40" stroke="#44AA44" stroke-width="0.8" opacity="0.4"/>
-      </svg>
-      <div class="card-title">Location Forge</div>
-      <p class="card-desc">Form the Elements. Find your place.</p>
-      <div class="lock-overlay">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#c9a84c" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#c9a84c" stroke-width="1.5"/><circle cx="12" cy="16" r="1.5" fill="#c9a84c"/></svg>
-        <span>Initiates Only</span>
-      </div>
-    </div>
-
-    <!-- MEMBER ONLY: NPC Forge -->
-    <div class="forge-card member-card" data-href="npc-forge.html">
-      <div class="card-badge member-badge">Initiates Only</div>
-      <svg class="card-die" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="8" width="44" height="44" rx="6" stroke="#CC3333" stroke-width="1.5" fill="rgba(204,51,51,0.06)"/>
-        <circle cx="20" cy="20" r="3" fill="#CC3333" opacity="0.7"/>
-        <circle cx="40" cy="20" r="3" fill="#CC3333" opacity="0.7"/>
-        <circle cx="20" cy="40" r="3" fill="#CC3333" opacity="0.7"/>
-        <circle cx="40" cy="40" r="3" fill="#CC3333" opacity="0.7"/>
-        <circle cx="30" cy="30" r="3" fill="#CC3333" opacity="0.7"/>
-        <circle cx="20" cy="30" r="3" fill="#CC3333" opacity="0.7"/>
-      </svg>
-      <div class="card-title">NPC Forge</div>
-      <p class="card-desc">Roll the dice. Bind a soul.</p>
-      <div class="lock-overlay">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#c9a84c" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#c9a84c" stroke-width="1.5"/><circle cx="12" cy="16" r="1.5" fill="#c9a84c"/></svg>
-        <span>Initiates Only</span>
-      </div>
-    </div>
-
-    <!-- MEMBER ONLY: Story Forge -->
-    <div class="forge-card member-card" data-href="tarot-forge.html">
-      <div class="card-badge member-badge">Initiates Only</div>
-      <svg class="card-die" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 4 Q15 4 14 7 L6 50 Q5 54 8 55 L8 56 L20 56 L20 55 Q17 54 18 50 L26 7 Q27 4 24 4 Z" stroke="#c9a84c" stroke-width="1.2" fill="rgba(201,168,76,0.06)" opacity="0.5"/>
-        <path d="M30 2 Q27 2 26 6 L18 52 Q17 56 20 57 L40 57 Q43 56 42 52 L34 6 Q33 2 30 2 Z" stroke="#c9a84c" stroke-width="1.5" fill="rgba(201,168,76,0.08)"/>
-        <line x1="27" y1="16" x2="33" y2="16" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
-        <line x1="25" y1="26" x2="35" y2="26" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
-        <line x1="23" y1="36" x2="37" y2="36" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
-        <path d="M42 4 Q45 4 46 7 L54 50 Q55 54 52 55 L52 56 L40 56 L40 55 Q43 54 42 50 L34 7 Q33 4 36 4 Z" stroke="#c9a84c" stroke-width="1.2" fill="rgba(201,168,76,0.06)" opacity="0.5"/>
-      </svg>
-      <div class="card-title">Story Forge</div>
-      <p class="card-desc">Consult the cards. Find your path.</p>
-      <div class="lock-overlay">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#c9a84c" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#c9a84c" stroke-width="1.5"/><circle cx="12" cy="16" r="1.5" fill="#c9a84c"/></svg>
-        <span>Initiates Only</span>
-      </div>
-    </div>
-
-    <!-- 7th card: Oracle — centred in its own grid row -->
-    <div class="forge-card member-card" data-href="the-oracle-of-the-magi.html" style="grid-column:2;">
-      <div class="card-badge member-badge">Initiates Only</div>
-      <svg class="card-die" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="30" cy="30" r="22" stroke="#c9a84c" stroke-width="1.5" fill="rgba(201,168,76,0.06)"/>
-        <circle cx="30" cy="30" r="14" stroke="#c9a84c" stroke-width="0.8" fill="none" opacity="0.5"/>
-        <circle cx="30" cy="30" r="4" fill="rgba(201,168,76,0.3)" stroke="#c9a84c" stroke-width="1"/>
-        <line x1="30" y1="8" x2="30" y2="16" stroke="#c9a84c" stroke-width="1" opacity="0.7"/>
-        <line x1="30" y1="44" x2="30" y2="52" stroke="#c9a84c" stroke-width="1" opacity="0.7"/>
-        <line x1="8" y1="30" x2="16" y2="30" stroke="#c9a84c" stroke-width="1" opacity="0.7"/>
-        <line x1="44" y1="30" x2="52" y2="30" stroke="#c9a84c" stroke-width="1" opacity="0.7"/>
-        <line x1="14" y1="14" x2="20" y2="20" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
-        <line x1="46" y1="46" x2="40" y2="40" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
-        <line x1="46" y1="14" x2="40" y2="20" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
-        <line x1="14" y1="46" x2="20" y2="40" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
-      </svg>
-      <div class="card-title">Oracle of the Magi</div>
-      <p class="card-desc">Seek counsel from the eternal. Ask, and the Oracle shall speak.</p>
+      <div class="card-title">RPG Resources</div>
+      <p class="card-desc">Forges, oracles, and tools for Initiates of the Order.</p>
       <div class="lock-overlay">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#c9a84c" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#c9a84c" stroke-width="1.5"/><circle cx="12" cy="16" r="1.5" fill="#c9a84c"/></svg>
         <span>Initiates Only</span>
@@ -527,15 +326,15 @@
 
 <!-- DUELLING MAT LIGHTBOX -->
 <div id="mat-lightbox" style="display:none; position:fixed; inset:0; background:rgba(5,3,10,0.95); z-index:1000; align-items:center; justify-content:center; flex-direction:column; gap:24px; padding:20px;">
-  <button onclick="closeMatLightbox()" style="position:absolute; top:20px; right:24px; background:transparent; border:none; color:var(--gold-dim); font-family:'Cinzel',serif; font-size:11px; letter-spacing:3px; cursor:pointer; text-transform:uppercase;">✕ Close</button>
+  <button onclick="closeMatLightbox()" style="position:absolute; top:20px; right:24px; background:transparent; border:none; color:var(--gold-dim); font-family:'Cinzel',serif; font-size:11px; letter-spacing:3px; cursor:pointer; text-transform:uppercase;">&#10005; Close</button>
   <div style="font-family:'Cinzel',serif; font-size:10px; letter-spacing:6px; color:var(--gold); text-transform:uppercase; margin-bottom:8px;">Duelling Mat</div>
   <img src="Duelling_Mat.png" alt="Maginomicon Duelling Mat" style="max-width:90vw; max-height:75vh; border:1px solid rgba(201,168,76,0.3); box-shadow:0 0 60px rgba(201,168,76,0.1); object-fit:contain;"/>
-  <a href="Duelling_Mat.png" download="Duelling_Mat.png" style="background:transparent; border:1px solid var(--gold); color:var(--gold-light); font-family:'Cinzel',serif; font-size:11px; letter-spacing:4px; text-transform:uppercase; padding:12px 32px; cursor:pointer; text-decoration:none; transition:all 0.3s;">⬇ Download</a>
+  <a href="Duelling_Mat.png" download="Duelling_Mat.png" style="background:transparent; border:1px solid var(--gold); color:var(--gold-light); font-family:'Cinzel',serif; font-size:11px; letter-spacing:4px; text-transform:uppercase; padding:12px 32px; cursor:pointer; text-decoration:none;">&#11015; Download</a>
 </div>
 
 <!-- PASSWORD MODAL -->
-<div id="pw-modal" style="display:none; position:fixed; inset:0; background:rgba(5,3,10,0.92); z-index:1000; display:none; align-items:center; justify-content:center;">
-  <div style="background:#0e0b10; border:1px solid rgba(201,168,76,0.4); padding:48px 40px; max-width:400px; width:90%; text-align:center; position:relative;">
+<div id="pw-modal" style="display:none; position:fixed; inset:0; background:rgba(5,3,10,0.92); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:#0e0b10; border:1px solid rgba(201,168,76,0.4); padding:48px 40px; max-width:400px; width:90%; text-align:center;">
     <div style="font-family:'Cinzel',serif; font-size:10px; letter-spacing:6px; color:var(--gold); text-transform:uppercase; margin-bottom:24px;">The Order</div>
     <p style="font-family:'EB Garamond',serif; font-size:1.05rem; color:var(--text-dim); font-style:italic; margin-bottom:32px; line-height:1.7;">Speak the words, Initiate.</p>
     <input id="pw-input" type="password" placeholder="Enter password" style="width:100%; background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.3); color:var(--text); font-family:'EB Garamond',serif; font-size:1.1rem; padding:12px 16px; text-align:center; letter-spacing:3px; outline:none; margin-bottom:12px;"/>
@@ -553,8 +352,7 @@
 <script>
   // ── DUELLING MAT LIGHTBOX ──
   function openMatLightbox() {
-    const lb = document.getElementById('mat-lightbox');
-    lb.style.display = 'flex';
+    document.getElementById('mat-lightbox').style.display = 'flex';
   }
   function closeMatLightbox() {
     document.getElementById('mat-lightbox').style.display = 'none';
@@ -563,49 +361,32 @@
     if (e.target === this) closeMatLightbox();
   });
 
-  // ── CHANGE THIS PASSWORD ──
+  // ── PASSWORD ──
   const PASSWORD = "INITIATE";
   const SESSION_KEY = "maginomicon_member";
-
-  // Check if already unlocked this session
   let isUnlocked = sessionStorage.getItem(SESSION_KEY) === "true";
 
-  function unlockMemberCards() {
-    isUnlocked = true;
-    sessionStorage.setItem(SESSION_KEY, "true");
-    document.querySelectorAll('.member-card').forEach(card => {
-      card.classList.add('unlocked');
-    });
-  }
-
-  // If already unlocked, apply immediately
-  if (isUnlocked) unlockMemberCards();
-
-  // Modal logic
   const modal = document.getElementById('pw-modal');
   const pwInput = document.getElementById('pw-input');
   const pwError = document.getElementById('pw-error');
-  let pendingHref = null;
 
-  document.querySelectorAll('.member-card').forEach(card => {
-    card.addEventListener('click', () => {
-      if (isUnlocked) {
-        window.location.href = card.dataset.href;
-      } else {
-        pendingHref = card.dataset.href;
-        pwInput.value = '';
-        pwError.textContent = '';
-        modal.style.display = 'flex';
-        setTimeout(() => pwInput.focus(), 50);
-      }
-    });
+  document.getElementById('resources-card').addEventListener('click', () => {
+    if (isUnlocked) {
+      window.location.href = 'resources.html';
+    } else {
+      pwInput.value = '';
+      pwError.textContent = '';
+      modal.style.display = 'flex';
+      setTimeout(() => pwInput.focus(), 50);
+    }
   });
 
   document.getElementById('pw-submit').addEventListener('click', () => {
     if (pwInput.value.trim().toUpperCase() === PASSWORD) {
-      unlockMemberCards();
+      isUnlocked = true;
+      sessionStorage.setItem(SESSION_KEY, "true");
       modal.style.display = 'none';
-      if (pendingHref) window.location.href = pendingHref;
+      window.location.href = 'resources.html';
     } else {
       pwError.textContent = 'Banished.';
       pwInput.value = '';
@@ -616,16 +397,14 @@
   pwInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('pw-submit').click();
   });
-
   document.getElementById('pw-cancel').addEventListener('click', () => {
     modal.style.display = 'none';
   });
-
   modal.addEventListener('click', e => {
     if (e.target === modal) modal.style.display = 'none';
   });
 
-  // ── INTERSECTION OBSERVER ──
+  // ── CARD FADE-IN ──
   const cards = document.querySelectorAll('.forge-card');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
