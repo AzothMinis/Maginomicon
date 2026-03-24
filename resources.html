@@ -167,8 +167,7 @@
     margin-top: 24px;
   }
   .oracle-row .forge-card {
-    max-width: 380px;
-    width: 100%;
+    width: calc(33.333% - 16px);
   }
 
   /* ── FOOTER ── */
@@ -334,18 +333,8 @@
     window.location.href = "index.html";
   }
 
-  // Card fade-in
-  const cards = document.querySelectorAll('.forge-card');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const idx = Array.from(cards).indexOf(entry.target);
-        setTimeout(() => entry.target.classList.add('visible'), idx * 100);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  cards.forEach(c => observer.observe(c));
+  // Make all cards visible immediately
+  document.querySelectorAll('.forge-card').forEach(c => c.classList.add('visible'));
 </script>
 
 </body>
