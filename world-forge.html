@@ -541,7 +541,7 @@
       </div>
       <div class="die-category">Spirit</div>
       <div class="die-roll-number" id="num-d12">—</div>
-      <div class="die-result-name" id="res-d12">World Soul</div>
+      <div class="die-result-name" id="res-d12">Ambiance and Ether</div>
     </div>
 
     <!-- D20 -->
@@ -573,7 +573,7 @@
       </div>
       <div class="die-category">Conflict</div>
       <div class="die-roll-number" id="num-d20">—</div>
-      <div class="die-result-name" id="res-d20">The Evolution</div>
+      <div class="die-result-name" id="res-d20">Current Crisis</div>
     </div>
   </div>
 
@@ -598,76 +598,76 @@ const TABLES = {
   d4: {
     name: "Element",
     results: {
-      1: { name: "Fire",  desc: "Hot & Dry"  },
-      2: { name: "Water", desc: "Cold & Wet" },
-      3: { name: "Air",   desc: "Hot & Wet"  },
-      4: { name: "Earth", desc: "Cold & Dry" }
+      1: { name: "Fire",  desc: "Hot & Dry - arid heat and volatile tempers"  },
+      2: { name: "Water", desc: "Cold & Wet - oceans, rain and moody days" },
+      3: { name: "Air",   desc: "Hot & Wet - limitless skies and inspired minds"  },
+      4: { name: "Earth", desc: "Cold & Dry - grounded scenes and practical dreams" }
     }
   },
   d6: {
     name: "Genre",
     results: {
-      1: { name: "Fantasy", desc: "Magic, myth & ancient power" },
-      2: { name: "Sci-Fi", desc: "Stars, science & the unknown" },
-      3: { name: "Horror", desc: "Dread, darkness & what lurks" },
-      4: { name: "Post-Apocalyptic", desc: "Ruin, survival & what remains" },
-      5: { name: "Cyberpunk", desc: "Neon, chrome & corporate shadows" },
+      1: { name: "Fantasy", desc: "Magic, myth and dragon's blood" },
+      2: { name: "Sci-Fi", desc: "Spacecraft, technology and infinite horizons" },
+      3: { name: "Horror", desc: "Darkness, dread and what lurks beneath" },
+      4: { name: "Post-Apocalyptic", desc: "Ruins, scavenging and hardcore survival" },
+      5: { name: "Cyberpunk", desc: "Neon, chrome and acid rain" },
       6: { name: "Historical", desc: "Gothic grandeur and horse-trodden highways" }
     }
   },
   d8: {
     name: "Power",
     results: {
-      1: { name: "Theocracy", desc: "Gods speak through priests" },
-      2: { name: "Empire", desc: "One will, infinite reach" },
-      3: { name: "Anarchic City-States", desc: "A hundred fractured thrones" },
-      4: { name: "Corporate Oligarchy", desc: "Coin is the only law" },
-      5: { name: "Tribal Confederacy", desc: "Blood, oath & council" },
+      1: { name: "Theocracy", desc: "Priesthood holds the power" },
+      2: { name: "Empire", desc: "One iron will, one infinite reach" },
+      3: { name: "Independent City-States", desc: "A hundred fractured thrones" },
+      4: { name: "Corporate Oligarchy", desc: "Profit is the only law" },
+      5: { name: "Tribal Confederacy", desc: "Blood, oaths and councils" },
       6: { name: "Monarchy", desc: "The crown and its burden" },
-      7: { name: "Technocracy", desc: "Knowledge commands all" },
-      8: { name: "Democracy", desc: "The people — and their flaws" }
+      7: { name: "Technocracy", desc: "Information is power" },
+      8: { name: "Democracy", desc: "The people have their say" }
     }
   },
   d12: {
     name: "Spirit",
     results: {
-      1: { name: "Ancestral", desc: "The dead are present, history is alive" },
-      2: { name: "Hunted", desc: "Something vast is always watching" },
-      3: { name: "Decaying", desc: "Everything is past its peak, glorious ruin" },
-      4: { name: "Ascendant", desc: "Civilisation on the knife-edge of a great leap" },
-      5: { name: "Mythic", desc: "Legends are literally true, gods walk among mortals" },
-      6: { name: "Liminal", desc: "Borders between worlds are thin — dreams bleed into reality" },
-      7: { name: "Mercantile", desc: "Everything has a price, even souls" },
-      8: { name: "Wrathful", desc: "The land itself is angry — nature, weather, tectonic" },
-      9: { name: "Forgotten", desc: "Something enormous has been erased from memory" },
-      10: { name: "Cyclical", desc: "History repeats, people sense it but can't stop it" },
-      11: { name: "Transcendent", desc: "Spiritual enlightenment is within reach — or already lost" },
-      12: { name: "Hollow", desc: "The gods are dead/gone, and the world hasn't caught up yet" }
+      1: { name: "Tranquil/Serene", desc: "Peaceful, harmonious, and restorative - a sense of quiet contemplation and reverence" },
+      2: { name: "Mysterious/Enigmatic", desc: "A sense of shrouded secrets, ancient riddles, and hidden truths" },
+      3: { name: "Nostalgic/Melancholic", desc: "A bittersweet and reflective ambiance; a lament of longing sings unheard" },
+      4: { name: "Whimsical/Eccentric", desc: "Strange, quirky - a touch of playful madness fills the air" },
+      5: { name: "Wondrous/Majestic", desc: "A feeling of awe and grandeur prevails" },
+      6: { name: "Vibrant/Energetic", desc: "Brimming with life-force; encouraging and optimistic" },
+      7: { name: "Liminal/Null", desc: "The void of silence between the spaces" },
+      8: { name: "Eerie/Unsettling", desc: "Creepy, off-kilter, and subtly wrong; as if something is watching from the moments ahead" },
+      9: { name: "Grim/Oppressive", desc: "The atmosphere is heavy, bleak, and suffocating" },
+      10: { name: "Volatile/Charged", desc: "A world on the knife-edge; the air itself feels ready to ignite" },
+      11: { name: "Hostile/Threatening", desc: "A brutal, dangerous, and unforgiving place" },
+      12: { name: "Sinister/Malevolent", desc: "Dark, corrupted, and actively evil" }
     }
   },
   d20: {
     name: "Conflict",
     results: {
-      1: { name: "The Old Gods Return", desc: "From secular reason back to terrifying faith" },
-      2: { name: "The Great Dying", desc: "A plague that only takes the powerful" },
-      3: { name: "The Quiet Annexation", desc: "One empire absorbing others — no one noticed until now" },
-      4: { name: "The Awakening Land", desc: "The terrain itself developing consciousness and grievances" },
-      5: { name: "The Last Resource", desc: "Whatever powers this world is running out" },
-      6: { name: "The Schism", desc: "A single idea splitting society irreconcilably" },
-      7: { name: "The Veil Thinning", desc: "Another world bleeding into this one at the edges" },
-      8: { name: "The Uprising of the Made", desc: "Created things demanding selfhood" },
-      9: { name: "The Long Betrayal", desc: "A founding lie of civilisation being uncovered" },
-      10: { name: "The Migration", desc: "Tens of millions moving — fleeing something behind them" },
-      11: { name: "The Succession Crisis", desc: "The power structure has no heir — everyone knows it" },
-      12: { name: "The First Contact", desc: "Something from outside the known world has arrived" },
-      13: { name: "The Revolutionary Idea", desc: "A concept so dangerous it's being hunted to extinction" },
-      14: { name: "The Debt", desc: "A civilisational bargain made generations ago — now due" },
-      15: { name: "The Collapse of Distance", desc: "New technology obliterating old power structures" },
-      16: { name: "The Remembered War", desc: "Two peoples share catastrophic history — one wants it back" },
-      17: { name: "The Chosen Generation", desc: "Prophecy says this generation ends or saves everything" },
-      18: { name: "The Fracture", desc: "Reality, magic, or physics itself becoming unreliable" },
-      19: { name: "The Golden Age Ending", desc: "Everyone knows paradise is closing — fighting over last days" },
-      20: { name: "The Thing Beneath", desc: "Something ancient was buried for a reason. Nearly free." }
+      1: { name: "Fire of Fire", desc: "An all-consuming war that leaves nothing standing and no one unburned" },
+      2: { name: "Air of Fire", desc: "A wildfire, plague or famine spreads faster than it can be contained" },
+      3: { name: "Water of Fire", desc: "Volcanic or solar catastrophe is reshaping the physical world" },
+      4: { name: "Earth of Fire", desc: "A civilisation is burning down its foundations to survive the present" },
+      5: { name: "Spirit of Fire", desc: "Something has been unleashed that cannot be put back" },
+      6: { name: "Fire of Air", desc: "A prophetic vision or revolutionary message is tearing the world in two" },
+      7: { name: "Air of Air", desc: "Full-spectrum obfuscation has made discernment an impossibility" },
+      8: { name: "Water of Air", desc: "A tidal wave of migration is redefining every border and identity" },
+      9: { name: "Earth of Air", desc: "The climate has turned against the ecosystem" },
+      10: { name: "Spirit of Air", desc: "A leaderless and rudderless movement is pulling everything apart" },
+      11: { name: "Fire of Water", desc: "A tide of grief, rage or love has overwhelmed all reason and order" },
+      12: { name: "Air of Water", desc: "The sea, rivers or rains have failed - or risen beyond all reckoning" },
+      13: { name: "Water of Water", desc: "A collective emotional contagion - fear, fervour or despair - is spreading unchecked" },
+      14: { name: "Earth of Water", desc: "Something long-buried in the collective memory has resurfaced" },
+      15: { name: "Spirit of Water", desc: "The world is being dragged by a current no one chose and nobody can name" },
+      16: { name: "Fire of Earth", desc: "Control of resources is the only law that remains" },
+      17: { name: "Air of Earth", desc: "The ground itself is moving - tremors, subsidence, earthquakes - but how long can it hold?" },
+      18: { name: "Water of Earth", desc: "Generations of dispossession are finally coming due" },
+      19: { name: "Earth of Earth", desc: "The weight of history and tradition has made it impossible to move forward" },
+      20: { name: "Spirit of Earth", desc: "The structural foundations of reality - Nature, Law, Geometry - are beginning to fracture" }
     }
   }
 };
@@ -754,7 +754,7 @@ Power: ${power}
 Spirit: ${spirit}
 Conflict: ${conflict}
 
-Give a world name — something evocative and unexpected, drawn from real linguistic roots, not generic fantasy compounds like "Ashenveil" or "Ironspire". Then write 2-3 sentences of loose, atmospheric prose that captures the feel of the world. Suggest mood and texture, not plot or factions. Leave room for the GM to breathe.
+Give a world name - something evocative and unexpected, drawn from real linguistic roots, not generic fantasy compounds like "Ashenveil" or "Ironspire". Then write 2-3 sentences of loose, atmospheric prose that captures the feel of the world. Suggest mood and texture, not plot or factions. Leave room for the GM to breathe.
 
 Respond ONLY with a JSON object (no markdown, no backticks):
 {
