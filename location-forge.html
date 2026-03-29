@@ -303,7 +303,8 @@
   }
   .results-breakdown { display: flex; flex-direction: column; gap: 14px; }
   .result-row { border-left: 2px solid rgba(201,168,76,0.15); padding-left: 20px; }
-  .result-row-header { display: flex; align-items: center; gap: 12px; }
+  .result-row-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .result-row-sub { margin-top: 6px; padding-left: 0; font-size: 14px; font-style: italic; color: #a89878; line-height: 1.5; }
   .result-die-pip {
     font-family: 'Cinzel', serif;
     font-size: 9px;
@@ -343,7 +344,7 @@
   <!-- Single selector -->
   <div class="selector-group">
     <div class="selector-label">⬡ Exterior</div>
-    <div class="btn-row">
+    <div class="btn-row" id="exterior-btn-row">
       <button class="sel-btn active" onclick="setTable('exterior','general', this)">General</button>
       <button class="sel-btn" onclick="setTable('exterior','fantasy', this)">Fantasy</button>
       <button class="sel-btn" onclick="setTable('exterior','scifi', this)">Sci-Fi</button>
@@ -353,16 +354,8 @@
       <button class="sel-btn" onclick="setTable('exterior','historical', this)">Historical</button>
     </div>
     <div class="selector-label">⬡ Interior</div>
-    <div class="btn-row">
-      <button class="sel-btn" onclick="setTable('interior','rooms', this)">General</button>
-      <button class="sel-btn" onclick="setTable('interior','dungeon', this)">Dungeon</button>
-      <button class="sel-btn" onclick="setTable('interior','starship', this)">Starship</button>
-      <button class="sel-btn" onclick="setTable('interior','ship', this)">Ship</button>
-      <button class="sel-btn" onclick="setTable('interior','castle', this)">Castle</button>
-      <button class="sel-btn" onclick="setTable('interior','station', this)">Space Station</button>
-      <button class="sel-btn" onclick="setTable('interior','cave', this)">Cave System</button>
-      <button class="sel-btn" onclick="setTable('interior','sewer', this)">Sewer / Undercity</button>
-      <button class="sel-btn" onclick="setTable('interior','mega', this)">Megastructure</button>
+    <div class="btn-row" id="interior-btn-row">
+      <!-- Populated dynamically by updateInteriorButtons() -->
     </div>
   </div>
 
@@ -396,9 +389,9 @@
           <line x1="30" y1="5" x2="30" y2="15" stroke="#3cb450" stroke-width="1" opacity="0.5"/>
         </svg>
       </div>
-      <div class="die-category">Size</div>
+      <div class="die-category">Inhabitants</div>
       <div class="die-roll-number" id="num-d6">—</div>
-      <div class="die-result-name" id="res-d6">Scale</div>
+      <div class="die-result-name" id="res-d6">Population</div>
     </div>
     <!-- D8 -->
     <div class="die-card" id="card-d8">
@@ -412,9 +405,9 @@
           <line x1="50" y1="10" x2="12" y2="50" stroke="#dcbe28" stroke-width="0.8" opacity="0.25"/>
         </svg>
       </div>
-      <div class="die-category">Ambiance</div>
+      <div class="die-category">Size</div>
       <div class="die-roll-number" id="num-d8">—</div>
-      <div class="die-result-name" id="res-d8">Atmosphere</div>
+      <div class="die-result-name" id="res-d8">Scale</div>
     </div>
     <!-- D12 -->
     <div class="die-card" id="card-d12">
@@ -433,9 +426,9 @@
           <line x1="32" y1="43" x2="8" y2="38" stroke="#963cd2" stroke-width="1" opacity="0.5"/>
         </svg>
       </div>
-      <div class="die-category">Inhabitants</div>
+      <div class="die-category">Ambiance</div>
       <div class="die-roll-number" id="num-d12">—</div>
-      <div class="die-result-name" id="res-d12">Population</div>
+      <div class="die-result-name" id="res-d12">Atmosphere</div>
     </div>
     <!-- D20 -->
     <div class="die-card" id="card-d20">
@@ -487,66 +480,151 @@
 <script>
 const TABLES = {
   d4: {
-    1: { name: "Fire",  quality: "Hot & Dry"  },
-    2: { name: "Water", quality: "Cold & Wet" },
-    3: { name: "Air",   quality: "Hot & Wet"  },
-    4: { name: "Earth", quality: "Cold & Dry" }
+    1: { name: "Fire",  quality: "Hot & Dry",  desc: "Uncomfortable heat and parched surfaces; the smell of ash and iron"  },
+    2: { name: "Water", quality: "Cold & Wet", desc: "Dripping stone and damp air; the chill that seeps into the bones" },
+    3: { name: "Air",   quality: "Hot & Wet",  desc: "A sense of openness and freedom; as if the space is breathing"  },
+    4: { name: "Earth", quality: "Cold & Dry", desc: "Solid stone and treated timber; an impression of permanence and endurance" }
   },
   d6: {
-    1: "Tiny", 2: "Small", 3: "Modest",
-    4: "Large", 5: "Vast", 6: "Colossal"
+    1: { name: "Empty",              desc: "Not a soul to be seen" },
+    2: { name: "Near-deserted",      desc: "A few distant figures" },
+    3: { name: "Sparsely populated", desc: "Small clusters of people" },
+    4: { name: "Moderate",           desc: "A steady flow of bodies" },
+    5: { name: "Busy",               desc: "Movement, noise and a press of people" },
+    6: { name: "Overcrowded",        desc: "A tumult of bodies and raised voices" }
   },
   d8: {
-    1: "Serene", 2: "Welcoming", 3: "Industrious", 4: "Mundane",
-    5: "Tense", 6: "Eerie", 7: "Oppressive", 8: "Chaotic"
+    1: { name: "Tiny",       desc: "Barely a room" },
+    2: { name: "Small",      desc: "Compact and close" },
+    3: { name: "Modest",     desc: "Functional and adequate" },
+    4: { name: "Average",    desc: "Space to spread" },
+    5: { name: "Large",      desc: "Room enough to hide" },
+    6: { name: "Vast",       desc: "A huge echoing space" },
+    7: { name: "Gargantuan", desc: "A scale beyond human comprehension" },
+    8: { name: "Fractured",  desc: "A distortion in the Word blurs the boundaries" }
   },
   d12: {
-    1: "Empty", 2: "Near-deserted", 3: "A handful", 4: "Sparsely populated",
-    5: "Light traffic", 6: "Moderate", 7: "Steady footfall", 8: "Busy",
-    9: "Heavily trafficked", 10: "Packed", 11: "Overwhelmed", 12: "Crowded"
+    1: "Tranquil / Serene",
+    2: "Mysterious / Enigmatic",
+    3: "Nostalgic / Melancholic",
+    4: "Whimsical / Eccentric",
+    5: "Wondrous / Majestic",
+    6: "Vibrant / Energetic",
+    7: "Liminal / Null",
+    8: "Eerie / Unsettling",
+    9: "Grim / Oppressive",
+    10: "Volatile / Charged",
+    11: "Hostile / Threatening",
+    12: "Sinister / Malevolent"
+  },
+  d12desc: {
+    1: "Peaceful, harmonious, and restorative — a sense of quiet contemplation and reverence",
+    2: "A sense of shrouded secrets, ancient riddles, and hidden truths",
+    3: "A bittersweet and reflective ambiance; a lament of longing sings unheard",
+    4: "Strange, quirky — a touch of playful madness fills the air",
+    5: "A feeling of awe and grandeur prevails",
+    6: "Brimming with life-force; encouraging and optimistic",
+    7: "The void of silence between the spaces",
+    8: "Creepy, off-kilter, and subtly wrong; as if something is watching from the moments ahead",
+    9: "The atmosphere is heavy, bleak, and suffocating",
+    10: "A world on the knife-edge; the air itself feels ready to ignite",
+    11: "A brutal, dangerous, and unforgiving place",
+    12: "Dark, corrupted, and actively evil"
   },
   d20: {
     exterior: {
-      general:  {1:"Derelict",2:"Alley/Slum",3:"Hovel/Shelter",4:"Dwelling",5:"Workshop",6:"Warehouse",7:"Market",8:"Tavern",9:"School",10:"Prison",11:"Graveyard",12:"Hospital",13:"Archive",14:"Place of Worship",15:"Court",16:"Fortification",17:"Port",18:"Monument",19:"Seat of Power",20:"Palace"},
-      fantasy:  {1:"Ruins",2:"Fighting Pit",3:"Thieves' Den",4:"Hovel",5:"Cottage",6:"Stable",7:"Tavern",8:"Market Stall",9:"Smithy",10:"Jailhouse",11:"Apothecary",12:"Barracks",13:"Guild Hall",14:"Library/Scriptorium",15:"Courthouse",16:"Sanctum",17:"Harbour/Docks",18:"Tower",19:"Manor",20:"Castle"},
-      scifi:    {1:"Derelict",2:"Warehouse District",3:"Habitation",4:"Nutrition",5:"Cantina",6:"Fabrication Plant",7:"Trading Post",8:"Transit Hub",9:"Recreational",10:"Medical",11:"Data Vault",12:"Research Lab",13:"Comms Tower",14:"Security",15:"Defences",16:"Reactor Core",17:"Docking Bay",18:"Biodome",19:"Corporate HQ",20:"Command Centre"},
-      horror:   {1:"Derelict",2:"Slaughterhouse",3:"Mortuary",4:"Cemetery",5:"Motel",6:"Roadhouse",7:"Docks/Freight",8:"Shop",9:"School",10:"Park",11:"Police Station",12:"Carnival/Fair",13:"Library",14:"Laboratory",15:"Asylum",16:"Hospital",17:"Lighthouse/Watchtower",18:"Orphanage",19:"Sanctuary",20:"Manor House"},
-      postapoc: {1:"Bolt Hole",2:"Mass Grave",3:"Rad Zone",4:"Salvage Yard",5:"Cages",6:"Scavenger Market",7:"Diner",8:"Checkpoint",9:"Grow Op",10:"Fuel Depot",11:"Clinic",12:"Supply Cache",13:"Watchtower",14:"Shrine",15:"Fighting Pit",16:"Archives",17:"Fortification",18:"Bunker",19:"Warlord Compound",20:"Vault"},
-      cyberpunk:{1:"Derelict",2:"Squat",3:"Coffin Hotel",4:"Hack Den",5:"Chop Shop",6:"Noodle Bar",7:"Fight Club",8:"Market",9:"Warehouse",10:"Nightclub",11:"Hab Block",12:"Ripperdoc",13:"Security Precinct",14:"Vertical Farm",15:"Transit Station",16:"Body Bank",17:"Data Centre",18:"Broadcast Studio",19:"Landing Pad",20:"Corporate HQ"},
-      historical:{1:"Derelict",2:"Tenement",3:"Tavern/Alehouse",4:"Gaol",5:"Dockside",6:"Market",7:"Barracks",8:"Broadsheets",9:"Bank",10:"Asylum",11:"Hospital",12:"Guild Hall",13:"Library/Archive",14:"Courthouse",15:"Theatre",16:"Church",17:"Townhouse",18:"Museum",19:"Gentleman's Club",20:"Palace"}
+      general:  {1:{name:"Derelict",desc:"Abandoned and falling apart"},2:{name:"Alley/Slum",desc:"Cramped, dirty and unwatched"},3:{name:"Hovel/Shelter",desc:"Bare walls and little else"},4:{name:"Dwelling",desc:"Someone lives here"},5:{name:"Workshop",desc:"Tools, materials and work in progress"},6:{name:"Warehouse",desc:"Large storage; goods or secrets"},7:{name:"Market",desc:"Traders, buyers and noise"},8:{name:"Tavern",desc:"Drink, food and loose talk"},9:{name:"School",desc:"Learning, discipline and routine"},10:{name:"Prison",desc:"Locked doors and watched corridors"},11:{name:"Graveyard",desc:"The dead and those who tend them"},12:{name:"Hospital",desc:"The sick, the injured and those waiting"},13:{name:"Archive",desc:"Records, documents and old knowledge"},14:{name:"Place of Worship",desc:"Faith, ritual and congregation"},15:{name:"Court",desc:"Law, judgement and power"},16:{name:"Fortification",desc:"Built to hold and to repel"},17:{name:"Port",desc:"Goods, vessels and transient people"},18:{name:"Monument",desc:"Built to be remembered"},19:{name:"Seat of Power",desc:"Where decisions are made"},20:{name:"Palace",desc:"Wealth and authority made physical"}},
+      fantasy:  {1:{name:"Ruins",desc:"Broken stone and old danger"},2:{name:"Fighting Pit",desc:"Blood sport and crowds"},3:{name:"Thieves' Den",desc:"Stolen goods and bad company"},4:{name:"Hovel",desc:"Dirt floor, low ceiling, little hope"},5:{name:"Cottage",desc:"Small, domestic, lived-in"},6:{name:"Stable",desc:"Animals, feed and the smell of both"},7:{name:"Tavern",desc:"Ale, food and whatever trouble follows"},8:{name:"Market Stall",desc:"One trader, one pitch, one product"},9:{name:"Smithy",desc:"Fire, iron and skilled hands"},10:{name:"Jailhouse",desc:"Cells, a jailer and people waiting"},11:{name:"Apothecary",desc:"Remedies, poisons and the line between"},12:{name:"Barracks",desc:"Soldiers, weapons and enforced order"},13:{name:"Guild Hall",desc:"Trade, membership and closed doors"},14:{name:"Library/Scriptorium",desc:"Books, scrolls and silence"},15:{name:"Courthouse",desc:"Judgement dispensed with ceremony"},16:{name:"Sanctum",desc:"A place of power, warded and private"},17:{name:"Harbour/Docks",desc:"Ships, cargo and departure"},18:{name:"Tower",desc:"Height, isolation and a purpose"},19:{name:"Manor",desc:"Landed wealth and old money"},20:{name:"Castle",desc:"Walls, garrison and dominion"}},
+      scifi:    {1:{name:"Derelict",desc:"Dead systems and no life signs"},2:{name:"Warehouse District",desc:"Bulk storage and automated labour"},3:{name:"Habitation",desc:"Living quarters, functional and impersonal"},4:{name:"Nutrition",desc:"Food production or distribution"},5:{name:"Cantina",desc:"Drink, food and off-duty personnel"},6:{name:"Fabrication Plant",desc:"Manufacturing on an industrial scale"},7:{name:"Trading Post",desc:"Exchange of goods at the edge of things"},8:{name:"Transit Hub",desc:"Movement, schedules and crowds"},9:{name:"Recreational",desc:"Sanctioned leisure and monitored rest"},10:{name:"Medical",desc:"Treatment, triage and clinical silence"},11:{name:"Data Vault",desc:"Stored information, heavily secured"},12:{name:"Research Lab",desc:"Experiments in progress; results unclear"},13:{name:"Comms Tower",desc:"Signals in and out; someone is listening"},14:{name:"Security",desc:"Armed, watchful and authorised to act"},15:{name:"Defences",desc:"Built for threat response"},16:{name:"Reactor Core",desc:"Power generation; restricted access"},17:{name:"Docking Bay",desc:"Vessels arriving, departing, waiting"},18:{name:"Biodome",desc:"Controlled ecology behind sealed walls"},19:{name:"Corporate HQ",desc:"Administration, profit and surveillance"},20:{name:"Command Centre",desc:"Orders originate here"}},
+      horror:   {1:{name:"Derelict",desc:"Empty for years; not quite quiet"},2:{name:"Slaughterhouse",desc:"Industrial death, poorly cleaned"},3:{name:"Mortuary",desc:"The dead are prepared here"},4:{name:"Cemetery",desc:"Graves, markers and disturbed earth"},5:{name:"Motel",desc:"Cheap rooms and no questions asked"},6:{name:"Roadhouse",desc:"Locals only; strangers noticed"},7:{name:"Docks/Freight",desc:"Night shifts and unlit corners"},8:{name:"Shop",desc:"Normal on the surface"},9:{name:"School",desc:"Children's things left behind"},10:{name:"Park",desc:"Open ground with nowhere to hide"},11:{name:"Police Station",desc:"Help that may not come"},12:{name:"Carnival/Fair",desc:"Joy turned strange and hollow"},13:{name:"Library",desc:"Old books with troubling contents"},14:{name:"Laboratory",desc:"Someone was conducting experiments"},15:{name:"Asylum",desc:"Former patients; former staff"},16:{name:"Hospital",desc:"Corridors that go on too long"},17:{name:"Lighthouse/Watchtower",desc:"Isolated and exposed"},18:{name:"Orphanage",desc:"Children without explanation"},19:{name:"Sanctuary",desc:"Claimed to be safe"},20:{name:"Manor House",desc:"Old family, older problems"}},
+      postapoc: {1:{name:"Bolt Hole",desc:"Cramped refuge; just enough to survive"},2:{name:"Mass Grave",desc:"How many and when is unclear"},3:{name:"Rad Zone",desc:"Contaminated; enter at your own risk"},4:{name:"Salvage Yard",desc:"Stripped machines and useful scrap"},5:{name:"Cages",desc:"For holding people; in use or recently so"},6:{name:"Scavenger Market",desc:"Junk, food and barter"},7:{name:"Diner",desc:"Still serving; standards have slipped"},8:{name:"Checkpoint",desc:"Controlled passage; someone decides who passes"},9:{name:"Grow Op",desc:"Food production, guarded and vital"},10:{name:"Fuel Depot",desc:"Scarce resource under heavy control"},11:{name:"Clinic",desc:"Rough medicine with limited supplies"},12:{name:"Supply Cache",desc:"Stocked by someone, for someone"},13:{name:"Watchtower",desc:"Eyes on the approach roads"},14:{name:"Shrine",desc:"Old faith or new; both equally desperate"},15:{name:"Fighting Pit",desc:"Violence as entertainment and economy"},16:{name:"Archives",desc:"Pre-collapse records; mostly useless, occasionally not"},17:{name:"Fortification",desc:"Walls, defenders and a reason to hold it"},18:{name:"Bunker",desc:"Built before the fall; still standing"},19:{name:"Warlord Compound",desc:"One person's rule made concrete"},20:{name:"Vault",desc:"Sealed, pre-collapse and very much wanted"}},
+      cyberpunk:{1:{name:"Derelict",desc:"Burned out and stripped bare"},2:{name:"Squat",desc:"Illegal occupation; community by necessity"},3:{name:"Coffin Hotel",desc:"Minimum space, minimum cost"},4:{name:"Hack Den",desc:"Jacked in and checked out"},5:{name:"Chop Shop",desc:"Vehicles and bodies disassembled for parts"},6:{name:"Noodle Bar",desc:"Hot food and no surveillance"},7:{name:"Fight Club",desc:"Unsanctioned violence with an audience"},8:{name:"Market",desc:"Everything available; provenance optional"},9:{name:"Warehouse",desc:"Bulk storage or bulk concealment"},10:{name:"Nightclub",desc:"Loud, dark and full of transactions"},11:{name:"Hab Block",desc:"High density living, low quality everything"},12:{name:"Ripperdoc",desc:"Unlicensed augmentation and repair"},13:{name:"Security Precinct",desc:"Corporate law enforcement"},14:{name:"Vertical Farm",desc:"Food production stacked upward"},15:{name:"Transit Station",desc:"Movement between levels and districts"},16:{name:"Body Bank",desc:"Biological material bought and sold"},17:{name:"Data Centre",desc:"Physical infrastructure of the network"},18:{name:"Broadcast Studio",desc:"Someone controls the signal"},19:{name:"Landing Pad",desc:"Air traffic, private and expensive"},20:{name:"Corporate HQ",desc:"The real seat of power"}},
+      historical:{1:{name:"Derelict",desc:"Abandoned property in visible decay"},2:{name:"Tenement",desc:"Overcrowded housing for the poor"},3:{name:"Tavern/Alehouse",desc:"Drink, company and low conversation"},4:{name:"Gaol",desc:"Prisoners and those profiting from them"},5:{name:"Dockside",desc:"Trade, labour and arriving strangers"},6:{name:"Market",desc:"Commerce, noise and pickpockets"},7:{name:"Barracks",desc:"Military accommodation and discipline"},8:{name:"Broadsheets",desc:"News printed and distributed here"},9:{name:"Bank",desc:"Money, vaults and discreet transactions"},10:{name:"Asylum",desc:"The unwanted and the unwell"},11:{name:"Hospital",desc:"Care rationed by class and coin"},12:{name:"Guild Hall",desc:"Craft, membership and mutual protection"},13:{name:"Library/Archive",desc:"Knowledge restricted to the appropriate"},14:{name:"Courthouse",desc:"Justice as the powerful define it"},15:{name:"Theatre",desc:"Performance and the people who attend"},16:{name:"Church",desc:"Faith, charity and social control"},17:{name:"Townhouse",desc:"Respectable address, private affairs"},18:{name:"Museum",desc:"Collected, catalogued and displayed"},19:{name:"Gentleman's Club",desc:"Exclusion as the point"},20:{name:"Palace",desc:"Power dressed in marble and gilt"}}
     },
     interior: {
-      rooms:   {1:"Closet",2:"Storeroom",3:"Bedroom",4:"Kitchen",5:"Dining Room",6:"Study",7:"Workshop",8:"Bathroom",9:"Library",10:"Gallery",11:"Guard Room",12:"Vault",13:"Cellar",14:"Attic",15:"Audience Chamber",16:"Throne Room",17:"Torture Chamber",18:"Ritual Room",19:"Secret Passage",20:"Hidden Chamber"},
-      dungeon:  {1:"Collapsed Tunnel",2:"Guard Post",3:"Barracks",4:"Kennel",5:"Torture Chamber",6:"Prison Cell",7:"Armoury",8:"Mess Hall",9:"Trophy Room",10:"Shrine",11:"Trap Corridor",12:"Alchemical Lab",13:"Crypt",14:"Flooded Chamber",15:"Vault",16:"Throne Room",17:"Summoning Circle",18:"Pit",19:"Lair",20:"Inner Sanctum"},
-      starship: {1:"Access Crawlway",2:"Crew Bunk",3:"Galley",4:"Head",5:"Cargo Bay",6:"Engineering",7:"Armoury",8:"Medbay",9:"Science Lab",10:"Communications Array",11:"Observation Deck",12:"Brig",13:"Weapons Control",14:"Cryosleep Bay",15:"AI Core",16:"Captain's Quarters",17:"War Room",18:"Docking Clamp",19:"Reactor Room",20:"Bridge"},
-      ship:     {1:"Bilge",2:"Hold",3:"Crew Quarters",4:"Galley",5:"Brig",6:"Armoury",7:"Surgeon's Berth",8:"Carpenter's Store",9:"Chart Room",10:"Powder Magazine",11:"Gun Deck",12:"Quartermaster's Store",13:"First Mate's Cabin",14:"Officer's Mess",15:"Crow's Nest",16:"Fo'c'sle",17:"Poop Deck",18:"Armoured Hold",19:"Secret Compartment",20:"Captain's Cabin"},
-      castle:   {1:"Latrine",2:"Servant's Quarters",3:"Guardroom",4:"Stables",5:"Kitchen",6:"Chapel",7:"Armoury",8:"Dungeon",9:"Great Hall",10:"Barracks",11:"Steward's Office",12:"Infirmary",13:"Library",14:"Treasury",15:"Battlements",16:"Lord's Solar",17:"Oubliette",18:"War Room",19:"Secret Passage",20:"Throne Room"},
-      station:  {1:"Maintenance Shaft",2:"Worker Dormitory",3:"Airlock",4:"Market Hub",5:"Cantina",6:"Docking Bay",7:"Security Post",8:"Detention Block",9:"Engineering Core",10:"Medical Wing",11:"Research Lab",12:"Communications Hub",13:"Observation Deck",14:"Data Centre",15:"Weapons Platform",16:"Command Centre",17:"Reactor Core",18:"Quarantine Zone",19:"Abandoned Section",20:"Administrator's Sanctum"},
-      cave:     {1:"Narrow Fissure",2:"Sinkhole",3:"Passage",4:"Underground Stream",5:"Mushroom Grove",6:"Nesting Chamber",7:"Rockfall",8:"Thermal Vent",9:"Crystal Chamber",10:"Underground Lake",11:"Bone Pit",12:"Ancient Carving",13:"Collapsed Shrine",14:"Fungal Forest",15:"Lava Tube",16:"Hidden Pool",17:"Vast Cavern",18:"Glowing Grotto",19:"Primordial Chamber",20:"Abyss"},
-      sewer:    {1:"Drain",2:"Overflow Tunnel",3:"Junction",4:"Makeshift Camp",5:"Black Market Den",6:"Shrine",7:"Watchpost",8:"Holding Pit",9:"Workshop",10:"Flooded Chamber",11:"Gang Territory",12:"Corpse Dump",13:"Hidden Archive",14:"Fungal Garden",15:"Fortified Hideout",16:"Crime Boss Lair",17:"Ritual Site",18:"Underground Port",19:"Forgotten District",20:"Shadow Court"},
-      mega:     {1:"Maintenance Shaft",2:"Hab Block",3:"Transit Corridor",4:"Street Market",5:"Bar",6:"Chapel",7:"Security Checkpoint",8:"Holding Cell",9:"Fabrication Floor",10:"Server Room",11:"Corporate Office",12:"Med Clinic",13:"Data Vault",14:"Body Farm",15:"Private Level",16:"Executive Floor",17:"Fight Pit",18:"Landing Platform",19:"Decommissioned Level",20:"Control Spire"}
+      rooms:   {1:{name:"Closet",desc:"Storage, darkness and forgotten things"},2:{name:"Storeroom",desc:"Shelved goods and no natural light"},3:{name:"Bedroom",desc:"A bed, personal effects, a life implied"},4:{name:"Kitchen",desc:"Food preparation; fire and sharp things"},5:{name:"Dining Room",desc:"A table set for more than are present"},6:{name:"Study",desc:"Desk, books and private correspondence"},7:{name:"Workshop",desc:"A craft practised here; tools still out"},8:{name:"Bathroom",desc:"Hygiene, privacy and locked doors"},9:{name:"Library",desc:"Books organised by someone's logic"},10:{name:"Gallery",desc:"Art displayed for appreciation or status"},11:{name:"Guard Room",desc:"Posted here to watch; currently watching"},12:{name:"Vault",desc:"Secured entry; something worth protecting"},13:{name:"Cellar",desc:"Below ground, cool and out of sight"},14:{name:"Attic",desc:"Stored away and not thought about"},15:{name:"Audience Chamber",desc:"Formal meetings on someone's terms"},16:{name:"Throne Room",desc:"Power displayed for maximum effect"},17:{name:"Torture Chamber",desc:"Purpose-built and well-used"},18:{name:"Ritual Room",desc:"Prepared for ceremony; marks on the floor"},19:{name:"Secret Passage",desc:"Hidden access between places"},20:{name:"Hidden Chamber",desc:"Not on any plan; known to few"}},
+      dungeon:  {1:{name:"Collapsed Tunnel",desc:"Blocked; something caused this"},2:{name:"Guard Post",desc:"Stationed here; alert or otherwise"},3:{name:"Barracks",desc:"Sleeping quarters for those who serve below"},4:{name:"Kennel",desc:"Animals kept for hunting or worse"},5:{name:"Torture Chamber",desc:"Equipment present and accounted for"},6:{name:"Prison Cell",desc:"Locked from outside; someone inside"},7:{name:"Armoury",desc:"Weapons stored and maintained"},8:{name:"Mess Hall",desc:"Where they eat; crude and communal"},9:{name:"Trophy Room",desc:"Things taken from defeated enemies"},10:{name:"Shrine",desc:"Worship conducted away from scrutiny"},11:{name:"Trap Corridor",desc:"Passage with consequences"},12:{name:"Alchemical Lab",desc:"Experiments of uncertain intent"},13:{name:"Crypt",desc:"The dead stored with varying reverence"},14:{name:"Flooded Chamber",desc:"Water where there should be none"},15:{name:"Vault",desc:"Sealed and defended"},16:{name:"Throne Room",desc:"Someone rules from here"},17:{name:"Summoning Circle",desc:"Drawn carefully; used recently"},18:{name:"Pit",desc:"A drop with no clear bottom"},19:{name:"Lair",desc:"A creature's space, marked as such"},20:{name:"Inner Sanctum",desc:"The heart of it; most dangerous room"}},
+      starship: {1:{name:"Access Crawlway",desc:"Maintenance passage; tight and functional"},2:{name:"Crew Bunk",desc:"Shared sleeping quarters, minimum comfort"},3:{name:"Galley",desc:"Food preparation for a small crew"},4:{name:"Head",desc:"Sanitation; always in use, never clean enough"},5:{name:"Cargo Bay",desc:"Large open space; what's in the crates"},6:{name:"Engineering",desc:"Engines and systems; loud and hot"},7:{name:"Armoury",desc:"Weapons locked down between missions"},8:{name:"Medbay",desc:"Treatment for what space does to bodies"},9:{name:"Science Lab",desc:"Ongoing experiments; results filed or hidden"},10:{name:"Communications Array",desc:"Contact with the outside; monitored"},11:{name:"Observation Deck",desc:"View of space; used for thinking"},12:{name:"Brig",desc:"One cell; currently occupied or recently so"},13:{name:"Weapons Control",desc:"Targeting systems; armed and ready"},14:{name:"Cryosleep Bay",desc:"Bodies in suspension; journey not over"},15:{name:"AI Core",desc:"Ship intelligence housed and contained"},16:{name:"Captain's Quarters",desc:"Private; reflects the person in charge"},17:{name:"War Room",desc:"Planning, strategy and difficult decisions"},18:{name:"Docking Clamp",desc:"External attachment point; something is docked"},19:{name:"Reactor Room",desc:"Power source; do not linger"},20:{name:"Bridge",desc:"Command and control; the ship runs from here"}},
+      ship:     {1:{name:"Bilge",desc:"Lowest deck; water, rats and the worst jobs"},2:{name:"Hold",desc:"Cargo stored below the waterline"},3:{name:"Crew Quarters",desc:"Hammocks and no privacy"},4:{name:"Galley",desc:"Small kitchen; cook is always irritable"},5:{name:"Brig",desc:"Ship's jail; bolted to the hull"},6:{name:"Armoury",desc:"Weapons under lock"},7:{name:"Surgeon's Berth",desc:"Rough medicine performed quickly"},8:{name:"Carpenter's Store",desc:"Repair materials; always needed"},9:{name:"Chart Room",desc:"Navigation and course planning"},10:{name:"Powder Magazine",desc:"Explosive stores; no open flames"},11:{name:"Gun Deck",desc:"Cannon and the men who work them"},12:{name:"Quartermaster's Store",desc:"Supplies rationed and logged"},13:{name:"First Mate's Cabin",desc:"Authority just below the top"},14:{name:"Officer's Mess",desc:"Where rank eats separately"},15:{name:"Crow's Nest",desc:"Highest point; best view, worst weather"},16:{name:"Fo'c'sle",desc:"Forward crew space; cramped and social"},17:{name:"Poop Deck",desc:"Elevated stern; officers' domain"},18:{name:"Armoured Hold",desc:"Reinforced storage; valuable cargo"},19:{name:"Secret Compartment",desc:"Not on the manifest"},20:{name:"Captain's Cabin",desc:"Command, privacy and the ship's log"}},
+      castle:   {1:{name:"Latrine",desc:"Sanitation; a shaft in the wall"},2:{name:"Servant's Quarters",desc:"Small rooms for those who keep things running"},3:{name:"Guardroom",desc:"Duty post; weapons racked on the wall"},4:{name:"Stables",desc:"Horses, feed and the people who tend them"},5:{name:"Kitchen",desc:"Large, hot and constantly working"},6:{name:"Chapel",desc:"Private worship for the household"},7:{name:"Armoury",desc:"Equipment maintained and ready"},8:{name:"Dungeon",desc:"Below ground; prisoners and the forgotten"},9:{name:"Great Hall",desc:"Feasts, courts and public display"},10:{name:"Barracks",desc:"Common soldiers housed together"},11:{name:"Steward's Office",desc:"Administration of the estate"},12:{name:"Infirmary",desc:"The wounded and the sick"},13:{name:"Library",desc:"Books owned by the lord; not for everyone"},14:{name:"Treasury",desc:"Coin and valuables; heavily guarded"},15:{name:"Battlements",desc:"Walls and towers; eyes on the land"},16:{name:"Lord's Solar",desc:"Private quarters for the ruling family"},17:{name:"Oubliette",desc:"A hole; people put in and left"},18:{name:"War Room",desc:"Strategy, maps and closed-door decisions"},19:{name:"Secret Passage",desc:"Known to few; used carefully"},20:{name:"Throne Room",desc:"The seat of local power"}},
+      station:  {1:{name:"Maintenance Shaft",desc:"Access tunnels for systems and crew"},2:{name:"Worker Dormitory",desc:"Shift-based sleeping; always occupied"},3:{name:"Airlock",desc:"Transition between inside and outside"},4:{name:"Market Hub",desc:"Commerce in a contained space"},5:{name:"Cantina",desc:"Food, drink and off-duty noise"},6:{name:"Docking Bay",desc:"Vessels berthed and processed"},7:{name:"Security Post",desc:"Checkpoint with armed staff"},8:{name:"Detention Block",desc:"Holding cells; full or empty"},9:{name:"Engineering Core",desc:"Station systems and power"},10:{name:"Medical Wing",desc:"Healthcare; quality depends on status"},11:{name:"Research Lab",desc:"Ongoing work; access restricted"},12:{name:"Communications Hub",desc:"All signals route through here"},13:{name:"Observation Deck",desc:"View of space; civilian access"},14:{name:"Data Centre",desc:"Information stored and processed"},15:{name:"Weapons Platform",desc:"Defence systems; permanently manned"},16:{name:"Command Centre",desc:"Station administration and control"},17:{name:"Reactor Core",desc:"Power generation; heavily restricted"},18:{name:"Quarantine Zone",desc:"Sealed off; reason not always given"},19:{name:"Abandoned Section",desc:"Decommissioned and left; not empty"},20:{name:"Administrator's Sanctum",desc:"Top authority; invitation only"}},
+      cave:     {1:{name:"Narrow Fissure",desc:"Barely passable; squeezing required"},2:{name:"Sinkhole",desc:"A drop of uncertain depth"},3:{name:"Passage",desc:"Connecting tunnel; direction unclear"},4:{name:"Underground Stream",desc:"Moving water in the dark"},5:{name:"Mushroom Grove",desc:"Fungal growth, extensive and strange"},6:{name:"Nesting Chamber",desc:"Something lives here and has young"},7:{name:"Rockfall",desc:"Blocked or partially blocked passage"},8:{name:"Thermal Vent",desc:"Heat rising from below; sulphurous"},9:{name:"Crystal Chamber",desc:"Mineral formations; beautiful and sharp"},10:{name:"Underground Lake",desc:"Still water, deep and lightless"},11:{name:"Bone Pit",desc:"Remains accumulated over time"},12:{name:"Ancient Carving",desc:"Cut into the rock by unknown hands"},13:{name:"Collapsed Shrine",desc:"Once tended; no longer"},14:{name:"Fungal Forest",desc:"Dense growth that blocks the way"},15:{name:"Lava Tube",desc:"Cooled passage from an old flow"},16:{name:"Hidden Pool",desc:"Clear water, fed from above"},17:{name:"Vast Cavern",desc:"Open space underground; the ceiling unseen"},18:{name:"Glowing Grotto",desc:"Bioluminescent; beautiful and disorienting"},19:{name:"Primordial Chamber",desc:"Old beyond reckoning; untouched"},20:{name:"Abyss",desc:"A drop with no known bottom"}},
+      sewer:    {1:{name:"Drain",desc:"Entry point; narrow, foul and functional"},2:{name:"Overflow Tunnel",desc:"Flood relief passage; damp always"},3:{name:"Junction",desc:"Where tunnels meet; easy to get turned around"},4:{name:"Makeshift Camp",desc:"Someone lives down here"},5:{name:"Black Market Den",desc:"Off the books trade in an off the books place"},6:{name:"Shrine",desc:"Worship conducted in secret"},7:{name:"Watchpost",desc:"Someone monitors the tunnels"},8:{name:"Holding Pit",desc:"People kept here against their will"},9:{name:"Workshop",desc:"Craft or construction below ground"},10:{name:"Flooded Chamber",desc:"Knee-deep at minimum"},11:{name:"Gang Territory",desc:"Marked and defended"},12:{name:"Corpse Dump",desc:"Bodies disposed of without ceremony"},13:{name:"Hidden Archive",desc:"Records kept away from official eyes"},14:{name:"Fungal Garden",desc:"Cultivated growth; food or medicine or worse"},15:{name:"Fortified Hideout",desc:"Defensible position in the tunnels"},16:{name:"Crime Boss Lair",desc:"Someone runs things from here"},17:{name:"Ritual Site",desc:"Used for ceremony; marks remain"},18:{name:"Underground Port",desc:"Waterway access; boats move unseen"},19:{name:"Forgotten District",desc:"A whole area lost to the city above"},20:{name:"Shadow Court",desc:"Parallel power structure; decisions made here"}},
+      mega:     {1:{name:"Maintenance Shaft",desc:"Crawlspace between levels; workers only"},2:{name:"Hab Block",desc:"Residential; thousands stacked in columns"},3:{name:"Transit Corridor",desc:"Movement between zones; constant flow"},4:{name:"Street Market",desc:"Commerce without permits"},5:{name:"Bar",desc:"Drink and noise; no questions"},6:{name:"Chapel",desc:"Faith maintained in difficult conditions"},7:{name:"Security Checkpoint",desc:"Movement controlled and logged"},8:{name:"Holding Cell",desc:"Short-term detention; processing pending"},9:{name:"Fabrication Floor",desc:"Manufacturing at scale"},10:{name:"Server Room",desc:"Data infrastructure; climate controlled"},11:{name:"Corporate Office",desc:"Administrative arm of whoever owns this level"},12:{name:"Med Clinic",desc:"Healthcare; minimal and means-tested"},13:{name:"Data Vault",desc:"Sensitive information, physically secured"},14:{name:"Body Farm",desc:"Biological material harvested and processed"},15:{name:"Private Level",desc:"No public access; residents only"},16:{name:"Executive Floor",desc:"Wealth visible from the moment of entry"},17:{name:"Fight Pit",desc:"Illegal combat; popular and profitable"},18:{name:"Landing Platform",desc:"Air access to the structure"},19:{name:"Decommissioned Level",desc:"Sealed off; still occupied"},20:{name:"Control Spire",desc:"Building management and surveillance hub"}}
     }
   }
 };
 
-let currentGenre = 'general';
+let currentExteriorGenre = 'general';
+let currentInteriorKey   = 'rooms';
 let currentScale = 'exterior';
 let isRolling = false;
 
+// Which interior types make sense for each exterior genre
+const GENRE_INTERIORS = {
+  general:    ['rooms','dungeon','ship','castle','cave','sewer'],
+  fantasy:    ['rooms','dungeon','castle','cave','sewer'],
+  scifi:      ['rooms','starship','station','mega'],
+  horror:     ['rooms','dungeon','cave','sewer'],
+  postapoc:   ['rooms','dungeon','cave','sewer','mega'],
+  cyberpunk:  ['rooms','sewer','mega','station'],
+  historical: ['rooms','ship','castle','cave','sewer']
+};
+
+// Friendly labels for interior buttons
+const INTERIOR_LABELS = {
+  rooms:   'General',
+  dungeon: 'Dungeon',
+  starship:'Starship',
+  ship:    'Ship',
+  castle:  'Castle',
+  station: 'Space Station',
+  cave:    'Cave System',
+  sewer:   'Sewer / Undercity',
+  mega:    'Megastructure'
+};
+
+function updateInteriorButtons() {
+  const allowed = GENRE_INTERIORS[currentExteriorGenre] || Object.keys(INTERIOR_LABELS);
+  const row = document.getElementById('interior-btn-row');
+  row.innerHTML = '';
+
+  // Reset interior key to first valid option if current is no longer valid
+  if (!allowed.includes(currentInteriorKey)) {
+    currentInteriorKey = allowed[0];
+  }
+
+  allowed.forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'sel-btn' + (key === currentInteriorKey ? ' active' : '');
+    btn.textContent = INTERIOR_LABELS[key];
+    btn.onclick = function() { setTable('interior', key, this); };
+    row.appendChild(btn);
+  });
+}
+
 function setTable(scale, genre, btn) {
   currentScale = scale;
-  currentGenre = genre;
-  document.querySelectorAll('.sel-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+
+  if (scale === 'exterior') {
+    currentExteriorGenre = genre;
+    document.querySelectorAll('#exterior-btn-row .sel-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updateInteriorButtons();
+  } else {
+    currentInteriorKey = genre;
+    document.querySelectorAll('#interior-btn-row .sel-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
 }
 
 function rollDie(faces) { return Math.floor(Math.random() * faces) + 1; }
 
 function getD20Result(roll) {
   if (currentScale === 'exterior') {
-    return TABLES.d20.exterior[currentGenre][roll];
+    return TABLES.d20.exterior[currentExteriorGenre][roll];
   } else {
-    return TABLES.d20.interior[currentScale][roll];
+    return TABLES.d20.interior[currentInteriorKey][roll];
   }
 }
 
@@ -575,10 +653,10 @@ async function rollAll() {
     document.getElementById(`card-${d}`).classList.add('revealed');
     document.getElementById(`num-${d}`).textContent = rolls[d];
     if (d === 'd4')  document.getElementById(`res-${d}`).textContent = TABLES.d4[rolls.d4].name;
-    if (d === 'd6')  document.getElementById(`res-${d}`).textContent = TABLES.d6[rolls.d6];
-    if (d === 'd8')  document.getElementById(`res-${d}`).textContent = TABLES.d8[rolls.d8];
+    if (d === 'd6')  document.getElementById(`res-${d}`).textContent = TABLES.d6[rolls.d6].name;
+    if (d === 'd8')  document.getElementById(`res-${d}`).textContent = TABLES.d8[rolls.d8].name;
     if (d === 'd12') document.getElementById(`res-${d}`).textContent = TABLES.d12[rolls.d12];
-    if (d === 'd20') document.getElementById(`res-${d}`).textContent = getD20Result(rolls.d20);
+    if (d === 'd20') document.getElementById(`res-${d}`).textContent = getD20Result(rolls.d20).name;
   }
 
   await new Promise(r => setTimeout(r, 600));
@@ -591,19 +669,24 @@ async function rollAll() {
 
 function renderResult(rolls) {
   const element    = TABLES.d4[rolls.d4].name;
-  const quality    = TABLES.d4[rolls.d4].quality;
-  const size       = TABLES.d6[rolls.d6];
-  const ambiance   = TABLES.d8[rolls.d8];
-  const inhabitants= TABLES.d12[rolls.d12];
-  const func       = getD20Result(rolls.d20);
+  const d4quality  = TABLES.d4[rolls.d4].quality;
+  const d4desc     = TABLES.d4[rolls.d4].desc;
+  const inhabitants   = TABLES.d6[rolls.d6].name;
+  const inhabitantsDesc = TABLES.d6[rolls.d6].desc;
+  const size       = TABLES.d8[rolls.d8].name;
+  const sizeDesc   = TABLES.d8[rolls.d8].desc;
+  const ambiance   = TABLES.d12[rolls.d12];
+  const ambianceDesc = TABLES.d12desc[rolls.d12];
+  const func       = getD20Result(rolls.d20).name;
+  const funcDesc   = getD20Result(rolls.d20).desc;
 
   const colours = { d4:'#dc3232', d6:'#3cb450', d8:'#dcbe28', d12:'#963cd2', d20:'#3282dc' };
   const rows = [
-    { die:'d4',  label:'Element',     value: element,     sub: quality },
-    { die:'d6',  label:'Size',        value: size,        sub: '' },
-    { die:'d8',  label:'Ambiance',    value: ambiance,    sub: '' },
-    { die:'d12', label:'Inhabitants', value: inhabitants, sub: '' },
-    { die:'d20', label:'Function',    value: func,        sub: '' },
+    { die:'d4',  label:'Element',     value: element,     sub: `${d4quality} — ${d4desc}` },
+    { die:'d6',  label:'Inhabitants', value: inhabitants, sub: inhabitantsDesc },
+    { die:'d8',  label:'Size',        value: size,        sub: sizeDesc },
+    { die:'d12', label:'Ambiance',    value: ambiance,    sub: ambianceDesc },
+    { die:'d20', label:'Function',    value: func,        sub: funcDesc },
   ];
 
   const breakdown = rows.map(r => `
@@ -612,8 +695,8 @@ function renderResult(rolls) {
         <span class="result-die-pip" style="color:${colours[r.die]};border-color:${colours[r.die]}">${r.die.toUpperCase()}</span>
         <span class="result-label">${r.label}</span>
         <span class="result-value" style="color:${colours[r.die]}">${r.value}</span>
-        ${r.sub ? `<span style="color:var(--text-dim);font-size:11px;font-style:italic">${r.sub}</span>` : ''}
       </div>
+      ${r.sub ? `<div class="result-row-sub">${r.sub}</div>` : ''}
     </div>`).join('');
 
   const panel = document.getElementById('resultPanel');
@@ -624,6 +707,8 @@ function renderResult(rolls) {
 
   panel.classList.add('visible');
 }
+// Initialise interior buttons for the default genre
+updateInteriorButtons();
 </script>
 </body>
 </html>

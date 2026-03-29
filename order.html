@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Order — Maginomicon</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root { --gold:#c9a84c; --gold-light:#e8c97a; --gold-dim:#6a5828; --deep:#05030a; --text:#d4c5a0; --text-dim:#7a6e58; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--deep); color:var(--text); font-family:'EB Garamond',serif; overflow-x:hidden; }
+
+  nav { position:fixed; top:0; left:0; right:0; z-index:100; padding:18px 40px; display:flex; align-items:center; justify-content:space-between; background:linear-gradient(to bottom,rgba(5,3,10,0.95),rgba(5,3,10,0)); }
+  .nav-logo { font-family:'Cinzel Decorative',serif; font-size:1.1rem; color:var(--gold-light); text-decoration:none; letter-spacing:3px; }
+  .nav-links a { font-family:'Cinzel',serif; font-size:10px; letter-spacing:3px; color:var(--gold-dim); text-decoration:none; text-transform:uppercase; margin-left:32px; transition:color 0.3s; }
+  .nav-links a:hover { color:var(--gold-light); }
+
+  .page-header { padding:140px 20px 80px; text-align:center; position:relative; overflow:hidden; }
+  .page-header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(201,168,76,0.06) 0%,transparent 70%); pointer-events:none; }
+  .page-ornament { font-family:'Cinzel',serif; font-size:10px; letter-spacing:8px; color:var(--gold-dim); text-transform:uppercase; margin-bottom:20px; opacity:0; animation:fadeUp 1s ease forwards 0.3s; }
+  .page-title { font-family:'Cinzel Decorative',serif; font-size:clamp(2.5rem,7vw,5rem); color:var(--gold-light); text-shadow:0 0 60px rgba(201,168,76,0.4),0 2px 4px rgba(0,0,0,0.8); letter-spacing:6px; line-height:1.1; margin-bottom:28px; opacity:0; animation:fadeUp 1.2s ease forwards 0.5s; }
+  .page-subtitle { max-width:640px; margin:0 auto; font-size:1.1rem; font-style:italic; color:rgba(212,197,160,0.75); line-height:1.9; opacity:0; animation:fadeUp 1.2s ease forwards 0.8s; }
+  .gold-rule { width:120px; height:1px; background:linear-gradient(to right,transparent,var(--gold),transparent); margin:40px auto; opacity:0; animation:fadeUp 1s ease forwards 1s; }
+
+  .content { max-width:1100px; margin:0 auto; padding:0 20px 80px; }
+  .tree-label { text-align:center; margin-bottom:48px; }
+  .tree-label h2 { font-family:'Cinzel',serif; font-size:11px; letter-spacing:8px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; }
+  .tree-label p { font-style:italic; color:var(--text-dim); font-size:0.95rem; }
+
+  .pillar-label { font-family:'Cinzel',serif; font-size:9px; letter-spacing:5px; color:var(--gold-dim); text-transform:uppercase; margin-bottom:20px; margin-top:48px; padding-bottom:8px; border-bottom:1px solid rgba(201,168,76,0.1); }
+  .pillar-label:first-of-type { margin-top:0; }
+
+  .dept-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:740px) { .dept-grid { grid-template-columns:1fr; } }
+  .dept-grid.centre .dept-card:only-child { grid-column:2; }
+
+  .dept-card { position:relative; background:linear-gradient(145deg,#0d0a14,#080510); border:1px solid rgba(201,168,76,0.15); padding:28px 24px 24px; cursor:pointer; overflow:hidden; opacity:0; transform:translateY(20px); }
+  .dept-card.visible { opacity:1; transform:translateY(0); transition:opacity 0.6s ease,transform 0.6s ease,border-color 0.35s,box-shadow 0.35s; }
+  .dept-card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),transparent); opacity:0; transition:opacity 0.35s; }
+  .dept-card:hover { border-color:rgba(201,168,76,0.4); transform:translateY(-3px) !important; box-shadow:0 16px 48px rgba(0,0,0,0.5),0 0 30px rgba(201,168,76,0.06); }
+  .dept-card:hover::after, .dept-card.active::after { opacity:1; }
+  .dept-card.active { border-color:rgba(201,168,76,0.5); }
+  .dept-card.is-secret::before { content:''; position:absolute; top:12px; right:12px; width:7px; height:7px; border-radius:50%; background:rgba(83,74,183,0.8); }
+
+  .seph-num { font-family:'Cinzel',serif; font-size:9px; letter-spacing:4px; color:var(--gold-dim); text-transform:uppercase; margin-bottom:8px; }
+  .dept-name { font-family:'Cinzel',serif; font-size:0.95rem; color:var(--gold-light); letter-spacing:1px; line-height:1.3; margin-bottom:6px; }
+  .dept-latin { font-style:italic; font-size:0.8rem; color:var(--gold-dim); margin-bottom:10px; }
+  .dept-mandate { font-size:0.85rem; color:var(--text-dim); line-height:1.6; }
+
+  .detail-panel { display:none; margin:16px 0 0; background:linear-gradient(145deg,#0e0a14,#09060f); border:1px solid rgba(201,168,76,0.3); padding:32px 36px; position:relative; overflow:hidden; opacity:0; transform:translateY(8px); transition:opacity 0.4s,transform 0.4s; }
+  .detail-panel.open { display:block; }
+  .detail-panel.visible { opacity:1; transform:translateY(0); }
+  .detail-panel::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(to right,transparent,var(--gold),transparent); }
+  .detail-panel::after { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(201,168,76,0.04) 0%,transparent 70%); pointer-events:none; }
+
+  .panel-header { display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+  .panel-title { font-family:'Cinzel',serif; font-size:1.1rem; color:var(--gold-light); letter-spacing:2px; }
+  .panel-seph { font-family:'Cinzel',serif; font-size:9px; letter-spacing:4px; color:var(--gold-dim); text-transform:uppercase; border:1px solid rgba(201,168,76,0.2); padding:3px 10px; }
+  .panel-quality { font-style:italic; color:var(--gold-dim); font-size:0.9rem; margin-bottom:16px; }
+  .panel-lore { font-size:1rem; line-height:1.9; color:rgba(212,197,160,0.85); margin-bottom:24px; }
+  .panel-roles { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+  .role-item { background:rgba(201,168,76,0.04); border:1px solid rgba(201,168,76,0.12); padding:14px 16px; }
+  .role-name { font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:6px; }
+  .role-desc { font-size:0.85rem; color:var(--text-dim); line-height:1.6; }
+  .panel-close { position:absolute; top:16px; right:20px; background:transparent; border:none; color:var(--gold-dim); font-family:'Cinzel',serif; font-size:9px; letter-spacing:3px; cursor:pointer; text-transform:uppercase; transition:color 0.3s; }
+  .panel-close:hover { color:var(--gold); }
+
+  .secret-banner { margin-top:20px; padding:14px 18px; border:1px solid rgba(83,74,183,0.4); background:rgba(83,74,183,0.05); display:flex; align-items:flex-start; gap:12px; }
+  .secret-dot { width:8px; height:8px; border-radius:50%; background:rgba(83,74,183,0.7); flex-shrink:0; margin-top:4px; }
+  .secret-banner p { font-family:'Cinzel',serif; font-size:9px; letter-spacing:2px; color:rgba(175,169,236,0.7); text-transform:uppercase; line-height:1.8; }
+
+  footer { border-top:1px solid rgba(201,168,76,0.1); padding:40px 20px; text-align:center; }
+  footer p { font-family:'EB Garamond',serif; font-size:0.95rem; color:var(--text-dim); line-height:1.8; max-width:700px; margin:0 auto 6px; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Maginomicon</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="order.html">The Order</a>
+  </div>
+</nav>
+
+<header class="page-header">
+  <p class="page-ornament">The Great Work</p>
+  <h1 class="page-title">The Order</h1>
+  <p class="page-subtitle">In the beginning was the One. From the One came three. From three, ten. From ten, all worlds. The Order mirrors this descent — from the unknowable summit to the agent in the field, each department a station on the lightning path.</p>
+  <div class="gold-rule"></div>
+</header>
+
+<div class="content">
+
+  <div class="tree-label">
+    <h2>Etz Chaim</h2>
+    <p>Ten sephiroth. One lightning path. Each a station of the divine will made manifest.</p>
+  </div>
+
+  <p class="pillar-label">The supernal triad</p>
+  <div class="dept-grid" id="grid-supernal"></div>
+
+  <p class="pillar-label">The ethical triad</p>
+  <div class="dept-grid" id="grid-ethical"></div>
+
+  <p class="pillar-label">The astral triad</p>
+  <div class="dept-grid" id="grid-astral"></div>
+
+  <p class="pillar-label">Malkuth</p>
+  <div class="dept-grid centre" id="grid-malkuth"></div>
+
+  <div id="detail-panel" class="detail-panel"></div>
+
+</div>
+
+<footer>
+  <p>&copy; 2026 Maior J. Brooks. Maginomicon. All rights reserved.</p>
+</footer>
+
+<script>
+const DEPTS = [
+  { group:'supernal', n:1, name:'Kether', col:'the crown', dept:'The Silentium', latin:'Ab Origine',
+    mandate:'The unknowable summit. No active department. The Council of Three resides here in theory.',
+    qual:'Pure being. The point before emanation.',
+    lore:'No institution can occupy the crown. The Council of Three is associated with Kether but does not own it. No Magus has ever reported contact with anything that claimed to speak from this station. The vacancy itself is a theological statement — and, for those who look closely enough, a potential plot point. The Silentium is the Order\'s acknowledgement that some things are beyond administration.',
+    roles:[
+      { name:'Council of Three', desc:'Unknown. Unknowable. Receives mandate directly from the Trinity. No Magus has ever met a Council member and known it.' },
+      { name:'The Vacancy', desc:'The absence at the summit. Some scholars believe the crown is empty by design. Others believe something sits there that has no name.' },
+      { name:'The Unnamed', desc:'Theoretical agents operating at a level beyond any recorded hierarchy. Their existence is not confirmed.' }
+    ], secret:false },
+
+  { group:'supernal', n:2, name:'Chokmah', col:'wisdom', dept:'The Celestial Archive', latin:'Memoria Aeterna',
+    mandate:'Keepers of the Akashic record across all time and frequency.',
+    qual:'Primordial force. Wisdom before form.',
+    lore:'Everything that has ever happened in any frequency is recorded. The Archive maintains that record, protects it from tampering, and deploys Magi to recover corrupted sections. They are also historians of the future — certain Archivists can read probability cascades, and their briefings inform the Council of Three\'s decrees. Nothing is ever truly lost to the Archive. Nothing.',
+    roles:[
+      { name:'Akashic Reader', desc:'Accesses the deep record for intelligence, prophecy, and forensic investigation of past events.' },
+      { name:'Record Incorruptor', desc:'Detects and repairs deliberate alterations to the historical fabric of a frequency.' },
+      { name:'Chrono Analyst', desc:'Interprets probability cascades and advises on which futures remain navigable.' }
+    ], secret:false },
+
+  { group:'supernal', n:3, name:'Binah', col:'understanding', dept:'The Harmonic Tribunal', latin:'Aequilibrium Veri',
+    mandate:'Philosophical and ethical governance. Interprets the will of the One.',
+    qual:'Structure. The great mother of form.',
+    lore:'Where Onesec enforces, the Tribunal interprets. They are the Order\'s philosophers, theologians, and ethicists — but with teeth. It falls to the Tribunal to determine whether an act of apparent evil was in fact an act of deep necessity, and whether an act of apparent good was in fact a corruption. They are the ones who authorise the Shadow Cabinet\'s most extreme operations. Their deliberations are rumoured to take centuries.',
+    roles:[
+      { name:'Doctrine Arbiter', desc:'Interprets hermetic law in novel situations — the Order\'s living canon.' },
+      { name:'Soul Magistrate', desc:'Rules on cases involving contested Magi — whether one has crossed from grey to dark.' },
+      { name:'Deep Ethics Envoy', desc:'Sent to frequencies whose local order-structures are failing. Mediates at civilisational scale.' }
+    ], secret:false },
+
+  { group:'ethical', n:4, name:'Chesed', col:'mercy', dept:'The Aureate Lodge', latin:'Lux Perpetua',
+    mandate:'Custodians of divine benefice and healing across all frequencies.',
+    qual:'Loving-kindness. Divine overflow.',
+    lore:'The oldest department, said to predate language. The Aureate Lodge channels Pure Emanation — the overflow of the One into creation. They do not fight. They restore. Where a frequency has been scarred by entropy or war, the Lodge arrives after, mending the resonant fabric so that life can return. Their agents often operate without knowing the full scope of what they are healing.',
+    roles:[
+      { name:'Emanation Keeper', desc:'Maintains the flow of divine grace into a frequency. Essentially a living conduit.' },
+      { name:'Wound Walker', desc:'Travels into spiritually devastated frequencies and begins the long work of restoration.' },
+      { name:'Nativity Warden', desc:'Oversees the births of high-potential souls — ensures Veilborn are placed correctly and protected.' }
+    ], secret:false },
+
+  { group:'ethical', n:5, name:'Geburah', col:'strength', dept:'GOD-SQUAD (Onesec)', latin:'Iustitia et Honor',
+    mandate:'The Order\'s justice force. Law, honour, and direct protection.',
+    qual:'Severity. Righteous force.',
+    lore:'The most visible arm of the Order in day-to-day operations. Onesec agents are the ones you meet at a nexus point, the ones who show up when a Tropper cell is exposed, the ones who escort Veilborn to safety. They are bound by strict codes — the Hermetic Laws of Engagement — and are the primary check against internal corruption. Internally, some call them saints. Troppers call them something else.',
+    roles:[
+      { name:'Field Warden', desc:'Ground-level enforcer. Present on assignment at any frequency assigned.' },
+      { name:'Honour Court Judge', desc:'Adjudicates disputes between Magi, including charges of treason and entropy-working.' },
+      { name:'Escort Marshal', desc:'Protects high-value persons including Hermies, Veilborn of significant destiny, and Council liaisons.' }
+    ], secret:false },
+
+  { group:'ethical', n:6, name:'Tiphareth', col:'beauty', dept:'The Solar Compact', latin:'Concordia Luminis',
+    mandate:'The beating heart of the Order — reconciliation, harmony, and the mystery at the centre of the tree.',
+    qual:'Harmony. The sacrificed king.',
+    lore:'Tiphareth is Kether\'s reflection in the lower worlds — the dying and rising king, beauty that holds the tension between mercy and severity. The Solar Compact sees all paths as one path. Their mandate, officially, is reconciliation and harmony across the Order\'s many arms. They are theologians, mediators, and keepers of the Order\'s deepest mysteries. Those who know the tree well may notice that Tiphareth\'s position — equidistant from everything — makes it uniquely suited to certain kinds of coordination.',
+    roles:[
+      { name:'Harmony Broker', desc:'Mediates between warring Order departments and factions. Sees the larger pattern.' },
+      { name:'Frequency Priest', desc:'Maintains the theological coherence of the Order\'s mission across radically different worlds.' },
+      { name:'Solar Liaison', desc:'[Classified. Tribunal clearance required.]' }
+    ], secret:true },
+
+  { group:'astral', n:7, name:'Netzach', col:'victory', dept:'The Verdant Compact', latin:'Custodia Vitae',
+    mandate:'Stewards of living worlds — flora, fauna, ecology of the spirit.',
+    qual:'Emotion. Instinct. Desire.',
+    lore:'Creation is not merely people and cities — it is the whole living membrane of each world. The Verdant Compact tends to the non-human: enchanted forests, elemental planes, the deep mythological fauna of each frequency. They are ecologists of the sacred, and they are ruthless in defence of what they steward. Agents have been known to level civilisations that threatened a nexus forest.',
+    roles:[
+      { name:'Axis Tender', desc:'Guards the world-trees and ley confluences that anchor a frequency\'s living web.' },
+      { name:'Feral Emissary', desc:'Speaks for and to non-human intelligences — spirits, elementals, beasts of mythological status.' },
+      { name:'Bloom Inquisitor', desc:'Investigates spiritual pollution in natural systems. Determines the source and chooses the remedy.' }
+    ], secret:false },
+
+  { group:'astral', n:8, name:'Hod', col:'splendour', dept:'The Bureau of Masks', latin:'Facies Sine Nomine',
+    mandate:'Deep infiltration of Tropper networks, hostile factions, and rogue Magi.',
+    qual:'Intellect. Language. Magic.',
+    lore:'The Bureau of Masks operates without identity. Its agents do not exist in any official record — even the Celestial Archive\'s entries on them are sealed at Tribunal level. They live inside enemy organisations, sometimes for decades, advancing through Tropper hierarchies, becoming trusted lieutenants of the Adversary\'s most capable servants. The Bureau does not retire agents. It reassigns them.',
+    roles:[
+      { name:'Deep Plant', desc:'Long-term infiltrator inside a hostile frequency-spanning network. May spend lifetimes in role.' },
+      { name:'Identity Sculptor', desc:'Constructs false histories, memories, and magical signatures for Bureau operatives.' },
+      { name:'Extraction Specialist', desc:'Pulls operatives — or intelligence — out of hostile environments. Often under fire.' }
+    ], secret:false },
+
+  { group:'astral', n:9, name:'Yesod', col:'foundation', dept:'The Weavers\' Conclave', latin:'Nexus et Forma',
+    mandate:'Architects of the frequency network. Builds and maintains nexus points and safehouses.',
+    qual:'Foundation. The lunar mirror.',
+    lore:'The safehouses don\'t build themselves. The Weavers\' Conclave is responsible for the entire infrastructure of the Order: nexus points, cross-frequency communication, the enchanted architecture of every safehouse from a neon-lit backroom in a cyberpunk megalopolis to a tower of carved obsidian in a dying medieval world. They also monitor for illegal nexus construction by Troppers and hostile factions.',
+    roles:[
+      { name:'Nexus Architect', desc:'Designs and deploys new safehouse and nexus points. Each is calibrated to its frequency.' },
+      { name:'Thread Watcher', desc:'Monitors cross-frequency communication lines for interception or corruption.' },
+      { name:'Dark Node Hunter', desc:'Finds and dismantles illegally constructed nexus points used by entropy networks.' }
+    ], secret:false },
+
+  { group:'malkuth', n:10, name:'Malkuth', col:'the kingdom', dept:'The Liminal Corps', latin:'Per Omnia Saecula',
+    mandate:'Field operations across all frequencies. The boots on the ground.',
+    qual:'The world. Manifest reality.',
+    lore:'Most player characters begin their careers here. The Liminal Corps is the operational arm that receives assignments from above and deploys Magi wherever they are needed. It encompasses scouts, diplomats, warriors, scholars — any Magus with a mandate and a destination. Internally it is meritocratic and messy, full of veterans who have seen too many frequencies and rookies who haven\'t seen enough.',
+    roles:[
+      { name:'Frequency Operative', desc:'Assigned to a specific mission in a specific world. Most Magi start here.' },
+      { name:'Crosspoint Courier', desc:'Carries sensitive intelligence and artefacts between frequencies. Trusted absolutely.' },
+      { name:'Deep Embed', desc:'Long-term placement in a frequency, often for years, operating without contact.' }
+    ], secret:false },
+
+];
+
+let openKey = null;
+
+function buildGrid(groupKey, gridId) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  const data = DEPTS.filter(d => d.group === groupKey);
+  data.forEach((d, i) => {
+    const card = document.createElement('div');
+    card.className = 'dept-card' + (d.secret ? ' is-secret' : '');
+    card.dataset.key = groupKey + '_' + i;
+    card.innerHTML = `
+      <div class="seph-num">${d.n !== '—' ? d.n + '. ' : ''}${d.name}</div>
+      <div class="dept-name">${d.dept}</div>
+      <div class="dept-latin">${d.latin}</div>
+      <div class="dept-mandate">${d.mandate}</div>
+    `;
+    card.addEventListener('click', () => showDetail(d, groupKey + '_' + i, card));
+    grid.appendChild(card);
+    setTimeout(() => card.classList.add('visible'), i * 90);
+  });
+}
+
+function showDetail(d, key, cardEl) {
+  const panel = document.getElementById('detail-panel');
+  const grid = cardEl.closest('.dept-grid');
+  grid.querySelectorAll('.dept-card').forEach(c => c.classList.remove('active'));
+  if (openKey === key) {
+    panel.classList.remove('open', 'visible');
+    setTimeout(() => { panel.innerHTML = ''; }, 300);
+    openKey = null;
+    return;
+  }
+  openKey = key;
+  cardEl.classList.add('active');
+  panel.classList.remove('visible');
+  panel.innerHTML = `
+    <button class="panel-close" onclick="closeDetail()">&#10005; Close</button>
+    <div class="panel-header">
+      <span class="panel-title">${d.dept}</span>
+      <span class="panel-seph">${d.name} &mdash; ${d.col}</span>
+    </div>
+    <p class="panel-quality">${d.qual}</p>
+    <p class="panel-lore">${d.lore}</p>
+    <div class="panel-roles">
+      ${d.roles.map(r => `<div class="role-item"><div class="role-name">${r.name}</div><div class="role-desc">${r.desc}</div></div>`).join('')}
+    </div>
+  `;
+  grid.parentNode.insertBefore(panel, grid.nextSibling);
+  panel.classList.add('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    panel.classList.add('visible');
+    panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }));
+}
+
+function closeDetail() {
+  const panel = document.getElementById('detail-panel');
+  document.querySelectorAll('.dept-card').forEach(c => c.classList.remove('active'));
+  panel.classList.remove('visible');
+  setTimeout(() => { panel.classList.remove('open'); panel.innerHTML = ''; }, 300);
+  openKey = null;
+}
+
+buildGrid('supernal',  'grid-supernal');
+buildGrid('ethical',   'grid-ethical');
+buildGrid('astral',    'grid-astral');
+buildGrid('malkuth',   'grid-malkuth');
+</script>
+</body>
+</html>
