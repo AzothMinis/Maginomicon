@@ -318,7 +318,8 @@
   }
   .results-breakdown { display: flex; flex-direction: column; gap: 14px; }
   .result-row { border-left: 2px solid rgba(201,168,76,0.15); padding-left: 20px; }
-  .result-row-header { display: flex; align-items: center; gap: 12px; }
+  .result-row-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .result-row-sub { margin-top: 6px; padding-left: 0; font-size: 14px; font-style: italic; color: #a89878; line-height: 1.5; }
   .result-die-pip {
     font-family: 'Cinzel', serif;
     font-size: 9px;
@@ -580,6 +581,202 @@ async function rollAll() {
   btn.textContent = 'ATTUNE';
 }
 
+const D4_DESC = {
+  1: "Uncomfortable heat and parched surfaces; the smell of ash and iron",
+  2: "Dripping stone and damp air; the chill that seeps into the bones",
+  3: "A sense of openness and freedom; as if the space is breathing",
+  4: "Solid stone and treated timber; an impression of permanence and endurance"
+};
+const D6_DESC = {
+  1: "Tightly wound, controlled — a stillness they have worked hard to maintain",
+  2: "Lean and economical; built for endurance rather than show",
+  3: "Unremarkable to look at — which is, perhaps, the point",
+  4: "Conditioned and capable; a body that reflects a life of effort",
+  5: "Broad, solid and immediately noticeable in a crowd",
+  6: "An almost unnatural physical presence; difficult to look away from"
+};
+const D8_DESC = {
+  1: "Deflects, redirects, never gives a straight answer",
+  2: "Sharp-eyed and calculating; always thinking two steps ahead",
+  3: "Easy company, quick to smile — and aware of exactly what that costs",
+  4: "Keeps their distance; not unfriendly, simply elsewhere in their mind",
+  5: "Leans forward, speaks first, takes up space",
+  6: "Open arms, open face; a warmth that may or may not be entirely genuine",
+  7: "Carries something heavy; it shows in the eyes and the silences",
+  8: "Watches too carefully; assumes the worst and is usually right"
+};
+const D12_DESC = {
+  1: "Someone wronged them. They have not forgotten and they never will",
+  2: "They have lived too close to danger; all they want now is solid ground",
+  3: "They will do whatever it takes to stay alive — and they have",
+  4: "They need somewhere to belong; an ache for connection they rarely admit",
+  5: "They want to be remembered; reputation is the only immortality they believe in",
+  6: "Something they did haunts them; they are trying to make it right",
+  7: "The system failed them or someone they loved; they intend to fix it",
+  8: "The habit owns them more than they own it",
+  9: "Every constraint is a cage; they will not stop pulling at the bars",
+  10: "Perfection in their craft is the only thing that quiets the noise",
+  11: "Their word is their only currency; they will not spend it lightly",
+  12: "Something greater than themselves moves through them; they serve it absolutely"
+};
+
+const D20_DESC = {
+  general: {
+    1:"Drifts from place to place, leaving little trace.",
+    2:"Sells lies to willing believers.",
+    3:"Speaks uncomfortable truths others would rather not hear.",
+    4:"Born to privilege and expects deference.",
+    5:"Holds power over others and intends to keep it.",
+    6:"Devoted to a higher power above all else.",
+    7:"Creates obsessively; the work is the only thing that matters.",
+    8:"Leads people into danger and calls it opportunity.",
+    9:"Fights for whoever pays and asks no further questions.",
+    10:"Accumulates knowledge relentlessly.",
+    11:"Bets on everything and everyone.",
+    12:"Enforces the law exactly as written.",
+    13:"Lives outside the rules entirely.",
+    14:"Kills for money.",
+    15:"Heals the sick and injured.",
+    16:"Controls the criminal underworld.",
+    17:"Fights for a cause they believe in absolutely.",
+    18:"Studies forbidden knowledge.",
+    19:"Hunts those deemed guilty.",
+    20:"Conquered territory through force and holds it the same way."
+  },
+  fantasy: {
+    1:"Walks roads others fear to travel.",
+    2:"Transmutes matter and bends natural law.",
+    3:"Draws power from wild, untamed places.",
+    4:"Commands loyalty through bloodline and coin.",
+    5:"Raises armies and breaks kingdoms.",
+    6:"Interprets the will of gods for mortal ears.",
+    7:"Weaves tales that change hearts and history.",
+    8:"Bound by oath to a lord or holy cause.",
+    9:"Sells a blade arm to whoever offers gold.",
+    10:"Seeks enlightenment through discipline and silence.",
+    11:"Wears many faces, trusts no single form.",
+    12:"Stands watch so others need not fear.",
+    13:"Lifts purses and picks locks with practiced ease.",
+    14:"Buries secrets along with the bodies.",
+    15:"Communes with nature and keeps ancient balance.",
+    16:"Made a bargain with something that should not exist.",
+    17:"Raises the dead and calls it mercy.",
+    18:"Pledged body and soul to a divine crusade.",
+    19:"Blends steel and sorcery on the battlefield.",
+    20:"Reads the wilderness like others read books."
+  },
+  scifi: {
+    1:"Passes through systems leaving no official record.",
+    2:"Cuts through security like it isn't there.",
+    3:"Reads minds — or claims to.",
+    4:"Signs death warrants from a boardroom chair.",
+    5:"Commands a crew and answers to no one above.",
+    6:"Shapes opinion across a thousand star systems.",
+    7:"Flies anything, anywhere, no questions asked.",
+    8:"Trained to breach, destroy, and not come back.",
+    9:"Accepts credits, ignores consequences.",
+    10:"Keeps the ship running when nothing should work.",
+    11:"Moves cargo the manifests will never mention.",
+    12:"Watches doors, watches people, watches everything.",
+    13:"Programmed to serve — perhaps programmed to more.",
+    14:"Patches wounds in places that don't have hospitals.",
+    15:"Runs the underworld across multiple star systems.",
+    16:"Survives on margins most wouldn't bother with.",
+    17:"Pursues answers that governments want buried.",
+    18:"Does the work that keeps civilisation fed.",
+    19:"Fights a war that started before they were born.",
+    20:"Moves goods and people across contested space."
+  },
+  horror: {
+    1:"Stumbled into this world of nightmares completely unprepared.",
+    2:"Reads forbidden texts and draws dangerous circles.",
+    3:"Gave everything to a god that consumes its faithful.",
+    4:"Carries a title older than the town's oldest grave.",
+    5:"Rules with fear, and has good reason to fear in turn.",
+    6:"Serves a faith that has been watching this town for decades.",
+    7:"Does whatever it is told by something that owns it.",
+    8:"Has seen what lurks and carries silver just in case.",
+    9:"Lost everything once and has learned to lose nothing again.",
+    10:"Knows where every body in town is buried.",
+    11:"Not quite the same person who walked in yesterday.",
+    12:"Follows evidence into places logic can't explain.",
+    13:"Something speaks through them. They no longer speak for themselves.",
+    14:"Has not aged in a very long time.",
+    15:"Communes with the dead and answers their requests.",
+    16:"Science brought it back. Sanity did not survive.",
+    17:"Sees what others refuse to look at.",
+    18:"Screams where others go silent. May be the sanest one here.",
+    19:"Was summoned. Stayed. Has plans.",
+    20:"Was here before the town. Will be here after."
+  },
+  postapoc: {
+    1:"Moves between settlements like smoke.",
+    2:"Builds weapons from wreckage and sells them cheap.",
+    3:"Prays to the old machines like gods.",
+    4:"Remembers the before-times and guards that knowledge.",
+    5:"Seized power through violence and holds it the same way.",
+    6:"Offers salvation to anyone desperate enough to listen.",
+    7:"Endured things that would have broken someone else.",
+    8:"Takes what others built and calls it tribute.",
+    9:"Wages other people's wars for canned goods and ammunition.",
+    10:"Sifts through ruins for anything still worth something.",
+    11:"Runs a circuit between settlements nobody else services.",
+    12:"Keeps order in a settlement that barely holds together.",
+    13:"Changed by the fallout in ways that aren't entirely human.",
+    14:"Trades in people, not goods.",
+    15:"Stitches wounds with whatever is on hand.",
+    16:"Has eaten things no one speaks of. Would do it again.",
+    17:"Maps the wastes for those willing to pay passage.",
+    18:"Lost to the wild in ways that may not be reversible.",
+    19:"Tracks those who run from the ones who hold power.",
+    20:"Glows faintly. Has learned to use what the poison gave."
+  },
+  noir: {
+    1:"Loads and unloads ships that ask no questions.",
+    2:"Knows every shortcut and every face on every corner.",
+    3:"Almost made it big. The ring has a long memory.",
+    4:"Sells prophecy on the corner to whoever will listen.",
+    5:"Knows where things go when they disappear.",
+    6:"Wears the badge like a costume.",
+    7:"Has a price and knows how to invoice it discreetly.",
+    8:"The microphone is the only place the truth comes out.",
+    9:"Follows the story wherever it goes, damn the consequences.",
+    10:"Works cases the police won't touch and charges accordingly.",
+    11:"Lost the licence, kept the knowledge, kept the habits.",
+    12:"Runs the back room where the real business gets done.",
+    13:"Uses desire like a weapon and never misses.",
+    14:"Owns six blocks and everyone in them.",
+    15:"Decides what the city knows and what it never will.",
+    16:"Sees the ugly truth behind every official cause of death.",
+    17:"Has a vote for sale and a price that keeps going up.",
+    18:"Has never ruled against the right people.",
+    19:"Attends the right parties and reports back the right things.",
+    20:"Inherited a fortune and a set of enemies to match."
+  },
+  pulp: {
+    1:"Works the land for masters they will never meet.",
+    2:"Shapes iron into things that outlast empires.",
+    3:"Reads signs in smoke and stars and entrails.",
+    4:"Commands a household and outlasts every man in it.",
+    5:"Holds title to the land and everyone who works it.",
+    6:"Speaks for God and has never questioned whether God agrees.",
+    7:"Trades favours under silk and candlelight.",
+    8:"Takes what the wealthy leave unguarded.",
+    9:"Fights wars they didn't start and may not survive.",
+    10:"Has mastered science, art, and three languages.",
+    11:"Moves goods between parties that cannot officially meet.",
+    12:"Roots out heresy with conviction that permits no doubt.",
+    13:"Carries out sentences the court would rather not witness.",
+    14:"Sails under no flag and answers to no crown.",
+    15:"Heals wounds that priests say are God's will.",
+    16:"Lives well at others' expense and calls it charm.",
+    17:"Will burn the old order down and plant something new.",
+    18:"Charts blank spaces on maps and brings back the truth.",
+    19:"Moves contraband across borders that don't want it crossed.",
+    20:"Fights for coin and finds cause somewhere along the way."
+  }
+};
+
 function generateNPC(rolls) {
   const element    = TABLES.d4[rolls.d4].name;
   const quality    = TABLES.d4[rolls.d4].quality;
@@ -589,11 +786,11 @@ function generateNPC(rolls) {
   const archetype  = TABLES.d20[currentGenre][rolls.d20];
   const colours = { d4:'#dc3232', d6:'#3cb450', d8:'#dcbe28', d12:'#963cd2', d20:'#3282dc' };
   const rows = [
-    { die:'d4', label:'Element', value:element, sub:quality },
-    { die:'d6', label:'Presence', value:presence, sub:'' },
-    { die:'d8', label:'Demeanour', value:demeanour, sub:'' },
-    { die:'d12', label:'Motivation', value:motivation, sub:'' },
-    { die:'d20', label:'Archetype', value:archetype, sub:'' },
+    { die:'d4',  label:'Element',    value: element,    sub: `${quality} — ${D4_DESC[rolls.d4]}` },
+    { die:'d6',  label:'Presence',   value: presence,   sub: D6_DESC[rolls.d6] },
+    { die:'d8',  label:'Demeanour',  value: demeanour,  sub: D8_DESC[rolls.d8] },
+    { die:'d12', label:'Motivation', value: motivation, sub: D12_DESC[rolls.d12] },
+    { die:'d20', label:'Archetype',  value: archetype,  sub: D20_DESC[currentGenre] ? D20_DESC[currentGenre][rolls.d20] : '' },
   ];
   const breakdown = rows.map(r => `
     <div class="result-row">
@@ -601,8 +798,8 @@ function generateNPC(rolls) {
         <span class="result-die-pip" style="color:${colours[r.die]};border-color:${colours[r.die]}">${r.die.toUpperCase()}</span>
         <span class="result-label">${r.label}</span>
         <span class="result-value" style="color:${colours[r.die]}">${r.value}</span>
-        ${r.sub ? `<span style="color:var(--text-dim);font-size:11px;font-style:italic">${r.sub}</span>` : ''}
       </div>
+      ${r.sub ? `<div class="result-row-sub">${r.sub}</div>` : ''}
     </div>`).join('');
   const elementAdj = { Fire:'Fiery', Earth:'Earthy', Water:'Watery', Air:'Airy' };
   const elemAdj = (elementAdj[element] || element).toLowerCase();
