@@ -371,7 +371,7 @@
     <button class="genre-btn" onclick="setGenre('scifi', this)">Sci-Fi</button>
     <button class="genre-btn" onclick="setGenre('horror', this)">Horror</button>
     <button class="genre-btn" onclick="setGenre('postapoc', this)">Post-Apocalyptic</button>
-    <button class="genre-btn" onclick="setGenre('cyberpunk', this)">Cyberpunk</button>
+    <button class="genre-btn" onclick="setGenre('noir', this)">Noir</button>
     <button class="genre-btn" onclick="setGenre('pulp', this)">Historical</button>
   </div>
 
@@ -520,7 +520,7 @@ const TABLES = {
     scifi:    { 1:"Traveller",2:"Slicer",3:"Psion",4:"Executive",5:"Officer",6:"Politician",7:"Pilot",8:"Marine",9:"Gun-For-Hire",10:"Engineer",11:"Smuggler",12:"Security",13:"Android",14:"Medic",15:"Crime Lord",16:"Scum",17:"Scientist",18:"Labourer",19:"Rebel",20:"Trader" },
     horror:   { 1:"Innocent",2:"Occultist",3:"Cultist",4:"Countess",5:"Lord",6:"Priest",7:"Thrall",8:"Hunter",9:"Survivor",10:"Gravedigger",11:"Shapeshifter",12:"Detective",13:"Possessed",14:"Vampire",15:"Necromancer",16:"Mad Scientist",17:"Mystic",18:"Hysteric",19:"Demon",20:"Spectre" },
     postapoc: { 1:"Vagrant",2:"Junker",3:"Cultist",4:"Elder",5:"Warlord",6:"Preacher",7:"Survivor",8:"Raider",9:"Mercenary",10:"Scavenger",11:"Trader",12:"Militia",13:"Mutant",14:"Slaver",15:"Medic",16:"Cannibal",17:"Scout",18:"Feral",19:"Bounty Hunter",20:"Irradiated" },
-    cyberpunk:{ 1:"Street Kid",2:"Netrunner",3:"Informant",4:"Gang Leader",5:"Kingpin",6:"Fixer",7:"Journalist",8:"Mercenary",9:"Cyberpsycho",10:"Nomad",11:"Stim Dealer",12:"Cop",13:"Ghost",14:"Assassin",15:"Medtech",16:"Smuggler",17:"Chromer",18:"Ripperdoc",19:"Corporate Muscle",20:"Corporate Executive" },
+    noir:{ 1:"Dockworker",2:"Taxi Driver",3:"Contender",4:"Street Preacher",5:"Pawnbroker/Fence",6:"Beat Cop",7:"Hitman",8:"Nightclub Singer",9:"Crime Reporter",10:"Private Eye",11:"Disgraced Doctor",12:"Speakeasy Owner",13:"Femme Fatale",14:"Mob Boss",15:"Newspaper Editor",16:"Coroner",17:"Crooked Politician",18:"Corrupt Judge",19:"Socialite",20:"Heiress" },
     pulp:     { 1:"Serf",2:"Smith",3:"Occultist",4:"Noblewoman",5:"Lord",6:"Bishop",7:"Courtesan/Spy",8:"Rogue/Thief",9:"Soldier",10:"Polymath",11:"Merchant",12:"Inquisitor",13:"Executioner",14:"Pirate",15:"Physician",16:"Rake",17:"Revolutionary",18:"Explorer",19:"Smuggler",20:"Mercenary" }
   }
 };
@@ -588,7 +588,7 @@ async function generateNPC(rolls) {
   const motivation = TABLES.d12[rolls.d12];
   const archetype  = TABLES.d20[currentGenre][rolls.d20];
   const hp         = rolls.d20;
-  const genreLabel = { general:'General', fantasy:'Fantasy', scifi:'Sci-Fi', horror:'Horror', postapoc:'Post-Apocalyptic', cyberpunk:'Cyberpunk', pulp:'Historical' }[currentGenre];
+  const genreLabel = { general:'General', fantasy:'Fantasy', scifi:'Sci-Fi', horror:'Horror', postapoc:'Post-Apocalyptic', noir:'Noir', pulp:'Historical' }[currentGenre];
 
   const prompt = `You are an NPC generator for tabletop RPGs. Generate a vivid, immediately playable NPC.
 
