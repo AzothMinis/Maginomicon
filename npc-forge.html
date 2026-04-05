@@ -574,98 +574,19 @@ async function rollAll() {
   panel.classList.add('visible');
   document.getElementById('npcContent').innerHTML = '<div class="loading-text">The oracle conjures your NPC...</div>';
 
-  await generateNPC(rolls);
+  generateNPC(rolls);
   isRolling = false;
   btn.disabled = false;
   btn.textContent = 'ATTUNE';
 }
 
-async function generateNPC(rolls) {
+function generateNPC(rolls) {
   const element    = TABLES.d4[rolls.d4].name;
   const quality    = TABLES.d4[rolls.d4].quality;
   const presence   = TABLES.d6[rolls.d6];
   const demeanour  = TABLES.d8[rolls.d8];
   const motivation = TABLES.d12[rolls.d12];
   const archetype  = TABLES.d20[currentGenre][rolls.d20];
-  const hp         = rolls.d20;
-  const genreLabel = { general:'General', fantasy:'Fantasy', scifi:'Sci-Fi', horror:'Horror', postapoc:'Post-Apocalyptic', noir:'Noir', pulp:'Historical' }[currentGenre];
-
-  const prompt = `You are an NPC generator for tabletop RPGs. Generate a vivid, immediately playable NPC.
-
-Dice results:
-- Element (D4): ${element} — ${quality}
-- Physical Presence (D6): ${presence}
-- Demeanour (D8): ${demeanour}
-- Motivation (D12): ${motivation}
-- Archetype (D20): ${archetype}
-- Genre: ${genreLabel}
-
-Rules:
-- Demeanour is the mask. Motivation is what's underneath. Let there be tension between the two.
-- Elemental nature flavours personality — it is not literal.
-- Give them a name appropriate to the genre.
-- Be specific about the person — how they look, how they move, their manner and bearing.
-- DO NOT invent place names, organisations, factions, or world lore.
-- DO NOT write what they want from the party or what they are currently doing or planning.
-- Vary physical descriptions entirely — avoid repeated tropes in hair, clothing, build, or mannerisms.
-
-Respond ONLY with JSON (no markdown, no backticks):
-{
-  "name": "Their name",
-  "tagline": "One sentence — who they are in this world, under 12 words",
-  "summary": "3-4 sentences. Appearance and personality ONLY. How they look, how they carry themselves, what their manner conveys. Nothing about what they want, are doing, or are planning."
-}`;
-
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 800,
-        temperature: 1,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content.map(i => i.text || '').join('');
-    const npc = JSON.parse(text.replace(/```json|```/g, '').trim());
-    renderNPC(npc, rolls, element, quality, presence, demeanour, motivation, archetype, hp);
-  } catch(e) {
-    renderFallback(rolls, element, quality, presence, demeanour, motivation, archetype, hp);
-  }
-}
-
-function renderNPC(npc, rolls, element, quality, presence, demeanour, motivation, archetype, hp) {
-  const colours = { d4:'#dc3232', d6:'#3cb450', d8:'#dcbe28', d12:'#963cd2', d20:'#3282dc' };
-  const rows = [
-    { die:'d4',  label:'Element',    value:`${element}`,   sub: quality },
-    { die:'d6',  label:'Presence',   value: presence,      sub: '' },
-    { die:'d8',  label:'Demeanour',  value: demeanour,     sub: '' },
-    { die:'d12', label:'Motivation', value: motivation,    sub: '' },
-    { die:'d20', label:'Archetype',  value: archetype,     sub: '' },
-  ];
-
-  const breakdown = rows.map(r => `
-    <div class="result-row">
-      <div class="result-row-header">
-        <span class="result-die-pip" style="color:${colours[r.die]};border-color:${colours[r.die]}">${r.die.toUpperCase()}</span>
-        <span class="result-label">${r.label}</span>
-        <span class="result-value" style="color:${colours[r.die]}">${r.value}</span>
-        ${r.sub ? `<span style="color:var(--text-dim);font-size:11px;font-style:italic">${r.sub}</span>` : ''}
-      </div>
-    </div>`).join('');
-
-  document.getElementById('npcContent').innerHTML = `
-    <div class="npc-name">${npc.name}</div>
-    <div class="npc-tagline">${npc.tagline}</div>
-    <div class="divider" style="margin:28px 0"><span style="color:var(--gold-dim);font-size:14px">⬡</span></div>
-    <div class="results-breakdown">${breakdown}</div>
-    <div class="divider" style="margin:28px 0"><span style="color:var(--gold-dim);font-size:14px">⬡</span></div>
-    <div class="npc-summary"><p>${npc.summary}</p></div>`;
-}
-
-function renderFallback(rolls, element, quality, presence, demeanour, motivation, archetype, hp) {
   const colours = { d4:'#dc3232', d6:'#3cb450', d8:'#dcbe28', d12:'#963cd2', d20:'#3282dc' };
   const rows = [
     { die:'d4', label:'Element', value:element, sub:quality },
