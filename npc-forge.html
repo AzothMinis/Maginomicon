@@ -294,21 +294,7 @@
     margin-bottom: 8px;
     text-transform: uppercase;
   }
-  .npc-tagline {
-    font-style: italic;
-    color: var(--text-dim);
-    text-align: center;
-    font-size: 1rem;
-    margin-bottom: 32px;
-  }
-  .npc-summary {
-    font-size: 1.05rem;
-    line-height: 1.9;
-    color: var(--text);
-    border-left: 2px solid var(--gold-dim);
-    padding-left: 24px;
-    margin-bottom: 32px;
-  }
+
   .npc-hook {
     color: var(--gold-dim);
     font-style: italic;
@@ -582,10 +568,10 @@ async function rollAll() {
 }
 
 const D4_DESC = {
-  1: "Uncomfortable heat and parched surfaces; the smell of ash and iron",
-  2: "Dripping stone and damp air; the chill that seeps into the bones",
-  3: "A sense of openness and freedom; as if the space is breathing",
-  4: "Solid stone and treated timber; an impression of permanence and endurance"
+  1: "Quick to anger, quick to act — runs hot and leaves scorched ground behind",
+  2: "Still on the surface, cold underneath; emotions run deep and slow",
+  3: "Hard to pin down, restless — their mood shifts before you've read it",
+  4: "Immovable when they've decided; patient, stubborn, built to last"
 };
 const D6_DESC = {
   1: "Tightly wound, controlled — a stillness they have worked hard to maintain",
@@ -801,15 +787,8 @@ function generateNPC(rolls) {
       </div>
       ${r.sub ? `<div class="result-row-sub">${r.sub}</div>` : ''}
     </div>`).join('');
-  const elementAdj = { Fire:'Fiery', Earth:'Earthy', Water:'Watery', Air:'Airy' };
-  const elemAdj = (elementAdj[element] || element).toLowerCase();
-  const article = /^[aeiou]/i.test(elemAdj) ? 'an' : 'a';
   document.getElementById('npcContent').innerHTML = `
     <div class="npc-name">${archetype}</div>
-    <div class="npc-tagline">${presence} · ${element} · ${demeanour}</div>
-    <div class="npc-summary">
-      <p>${presence} ${archetype.toLowerCase()} with ${article} ${elemAdj} nature. ${demeanour} on the surface, driven underneath by ${motivation.toLowerCase()}.</p>
-    </div>
     <div class="divider" style="margin:28px 0"><span style="color:var(--gold-dim);font-size:14px">⬡</span></div>
     <div class="results-breakdown">${breakdown}</div>`;
 }
